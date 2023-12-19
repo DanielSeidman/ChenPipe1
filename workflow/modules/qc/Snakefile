@@ -9,17 +9,17 @@ REFGENOME = samples['refGenome'].unique().tolist()
 
 rule all:
     input:
-        expand("results/{refGenome}/QC/{prefix}_qc.html", refGenome=REFGENOME, prefix=config['final_prefix'])
+        expand("results/QC/{prefix}_qc.html", refGenome=REFGENOME, prefix=config['final_prefix'])
 
 rule check_fai:
     """
     checks fai file for numeric first column, then do not run plink and rest of workflow if they are all numeric
     """
     input:
-        vcf = "results/{refGenome}/{prefix}_raw.vcf.gz",
-        fai = "results/{refGenome}/data/genome/{refGenome}.fna.fai",
+        vcf = "results/{prefix}_raw.vcf.gz",
+        fai = "results/data/genome/{refGenome}.fasta.fai",
     output:
-        faiResult = "results/{refGenome}/QC/{prefix}_fai_tmp.txt"
+        faiResult = "results/QC/{prefix}_fai_tmp.txt"
     run:
         check_contig_names(input.fai, output.faiResult)
 
@@ -50,7 +50,7 @@ rule subsample_snps:
     input:
         vcf = "results/{refGenome}/{prefix}_raw.vcf.gz",
         samps = "results/{refGenome}/QC/{prefix}.samps.txt",
-        fai = "results/{refGenome}/data/genome/{refGenome}.fna.fai",
+        fai = "results/{refGenome}/data/genome/{refGenome}.fasta.fai",
         sumstats = "results/{refGenome}/summary_stats/{prefix}_bam_sumstats.txt"
     output:
         filtered = temp("results/{refGenome}/QC/{prefix}_filtered.vcf.gz"),

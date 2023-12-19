@@ -8,7 +8,7 @@ REFGENOME = samples['refGenome'].unique().tolist()
 
 rule all:
     input:
-        expand("results/{refGenome}/mk/{prefix}_mk_table.tsv", refGenome=REFGENOME, prefix=config['final_prefix'])
+        expand("results/mk/{prefix}_mk_table.tsv", refGenome=REFGENOME, prefix=config['final_prefix'])
 
 rule prep_genome:
     """
@@ -18,11 +18,11 @@ rule prep_genome:
         ref = get_ref,
         gff = get_gff
     output:
-        ref = "results/{refGenome}/mk/{refGenome}.fna",
-        gff = "results/{refGenome}/mk/{refGenome}.gff"
+        ref = "results/mk/{refGenome}.fasta",
+        gff = "results/mk/{refGenome}.gff"
     params:
-        dataset = "results/{refGenome}/mk/{refGenome}_dataset.zip",
-        outdir = "results/{refGenome}/mk/{refGenome}"
+        dataset = "results/mk/{refGenome}_dataset.zip",
+        outdir = "results/mk/{refGenome}"
     conda:
         "envs/ncbi.yml"
     shell:
@@ -53,7 +53,7 @@ rule split_samples:
     Splits sample sheet to make ingroup and outgroup files
     """
     output:
-        exclude = "results/{refGenome}/mk/{prefix}_exclude.txt",
+        exclude = "results/mk/{prefix}_exclude.txt",
         outgroups = "results/{refGenome}/mk/{prefix}_ougroups.txt"
     run:
         out_df = samples[["BioSample", "SampleType"]]
@@ -69,7 +69,7 @@ rule degenotate:
     """
     input:
         vcf = "results/{refGenome}/{prefix}_clean_snps.vcf.gz",
-        genome = "results/{refGenome}/mk/{refGenome}.fna",
+        genome = "results/{refGenome}/mk/{refGenome}.fasta",
         gff = "results/{refGenome}/mk/{refGenome}.gff",
         exclude = "results/{refGenome}/mk/{prefix}_exclude.txt",
         outgroups = "results/{refGenome}/mk/{prefix}_ougroups.txt"

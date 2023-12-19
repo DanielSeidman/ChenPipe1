@@ -1,9 +1,9 @@
 rule sentieon_map:
     input:
-        ref = "results/{refGenome}/data/genome/{refGenome}.fna",
-        r1 = "results/{refGenome}/filtered_fastqs/{sample}/{run}_1.fastq.gz",
+        ref = "results/data/genome/{refGenome}.fasta",
+        r1 = "results/filtered_fastqs/{sample}/{run}_1.fastq.gz",
         r2 = "results/{refGenome}/filtered_fastqs/{sample}/{run}_2.fastq.gz",
-        indexes = expand("results/{{refGenome}}/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"])
+        indexes = expand("results/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"])
     output: 
         bam = temp("results/{refGenome}/bams/preMerge/{sample}/{run}.bam"),
         bai = temp("results/{refGenome}/bams/preMerge/{sample}/{run}.bam.bai"),
@@ -74,8 +74,8 @@ rule sentieon_dedup:
 
 rule sentieon_haplotyper:
     input:
-        ref = "results/{refGenome}/data/genome/{refGenome}.fna",
-        indexes = expand("results/{{refGenome}}/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
+        ref = "results/{refGenome}/data/genome/{refGenome}.fasta",
+        indexes = expand("results/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
         dictf = "results/{refGenome}/data/genome/{refGenome}.dict",
         bam = "results/{refGenome}/bams/{sample}_final.bam",
         bai = "results/{refGenome}/bams/{sample}_final.bam.bai"
@@ -104,8 +104,8 @@ rule sentieon_haplotyper:
 rule sentieon_combine_gvcf:
     input:
         unpack(sentieon_combine_gvcf_input),
-        ref = "results/{refGenome}/data/genome/{refGenome}.fna",
-        indexes = expand("results/{{refGenome}}/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
+        ref = "results/{refGenome}/data/genome/{refGenome}.fasta",
+        indexes = expand("results/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
         dictf = "results/{refGenome}/data/genome/{refGenome}.dict"
     output:
         vcf = temp("results/{refGenome}/vcfs/raw.vcf.gz"),
@@ -137,8 +137,8 @@ rule filter_vcf:
     input:
         vcf = "results/{refGenome}/vcfs/raw.vcf.gz",
         tbi = "results/{refGenome}/vcfs/raw.vcf.gz.tbi",
-        ref = "results/{refGenome}/data/genome/{refGenome}.fna",
-        indexes = expand("results/{{refGenome}}/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
+        ref = "results/{refGenome}/data/genome/{refGenome}.fasta",
+        indexes = expand("results/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
         dictf = "results/{refGenome}/data/genome/{refGenome}.dict"
     output:
         vcf = "results/{refGenome}/{prefix}_raw.vcf.gz",

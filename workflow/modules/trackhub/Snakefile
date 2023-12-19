@@ -12,13 +12,13 @@ FILE_TYPES = ["Tajima", "SNP-Density", "Pi"] # dont change this unless you add r
 
 rule all:
     input:
-        trackhub_file = expand("results/{refGenome}/trackhub/hub.txt", refGenome=REFGENOME),
-        trackhub_html = expand("results/{refGenome}/trackhub/index.html", refGenome=REFGENOME),
+        trackhub_file = expand("results/trackhub/hub.txt", refGenome=REFGENOME),
+        trackhub_html = expand("results/trackhub/index.html", refGenome=REFGENOME),
 
 rule write_hub_files:
     input:
-        window_stat_files = expand("results/{{refGenome}}/trackhub/{file_type}_{window}.bw", file_type=FILE_TYPES, window=WINDOWS),
-        vcf = expand("results/{{refGenome}}/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
+        window_stat_files = expand("results/trackhub/{file_type}_{window}.bw", file_type=FILE_TYPES, window=WINDOWS),
+        vcf = expand("results/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
         callable_sites = "results/{refGenome}/trackhub/non_callable_sites.bb",
         allele_freq = "results/{refGenome}/trackhub/allele_freq.bw",
         depth = "results/{refGenome}/trackhub/depth.bw",
@@ -39,7 +39,7 @@ rule strip_vcf:
     Strips vcf of all info/filters to reduce size
     """
     input:
-        vcf = expand("results/{{refGenome}}/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
+        vcf = expand("results/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
     output:
         vcf = "results/{refGenome}/trackhub/info_stripped_snps.vcf.gz",
         tbi = "results/{refGenome}/trackhub/info_stripped_snps.vcf.gz.tbi"
@@ -56,7 +56,7 @@ rule strip_vcf:
 
 rule calc_tajima:
     input:
-        vcf = expand("results/{{refGenome}}/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
+        vcf = expand("results/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
     output:
         temp("results/{refGenome}/trackhub/{window}.Tajima")
     log:
@@ -70,7 +70,7 @@ rule calc_tajima:
 
 rule calc_snpden:
     input:
-        vcf = expand("results/{{refGenome}}/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
+        vcf = expand("results/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
     output:
         temp("results/{refGenome}/trackhub/{window}.SNP-Density")
     log:
@@ -84,7 +84,7 @@ rule calc_snpden:
 
 rule calc_pi:
     input:
-        vcf = expand("results/{{refGenome}}/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
+        vcf = expand("results/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
     output:
         temp( "results/{refGenome}/trackhub/{window}.Pi")
     log:
@@ -98,7 +98,7 @@ rule calc_pi:
 
 rule chrom_sizes:
     input:
-        "results/{refGenome}/data/genome/{refGenome}.fna.fai"
+        "results/{refGenome}/data/genome/{refGenome}.fasta.fai"
     output:
         "results/{refGenome}/trackhub/chrom.sizes"
     shell:
@@ -106,7 +106,7 @@ rule chrom_sizes:
 
 rule bcftools_depth:
     input:
-        vcf = expand("results/{{refGenome}}/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
+        vcf = expand("results/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
         chrom_sizes = "results/{refGenome}/trackhub/chrom.sizes"
     output:
         bg = temp("results/{refGenome}/trackhub/depth.bg"),
@@ -122,7 +122,7 @@ rule bcftools_depth:
 
 rule vcftools_freq:
     input:
-        vcf = expand("results/{{refGenome}}/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
+        vcf = expand("results/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
         chrom_sizes = "results/{refGenome}/trackhub/chrom.sizes"
     output:
         bg = temp("results/{refGenome}/trackhub/allele_freq.bg"),
@@ -161,7 +161,7 @@ rule non_callable_sites:
     Calculates complement of callable sites to make 'non-callable sites' this makes visualzing on browser easier.
     """
     input:
-        callable_sites = expand("results/{{refGenome}}/{prefix}_callable_sites.bed", prefix=config['final_prefix']),
+        callable_sites = expand("results/{prefix}_callable_sites.bed", prefix=config['final_prefix']),
         chrom_sizes = "results/{refGenome}/trackhub/chrom.sizes",
         
     output:

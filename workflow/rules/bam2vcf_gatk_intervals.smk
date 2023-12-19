@@ -5,15 +5,15 @@ rule bam2gvcf:
     TODO
     """
     input:
-        ref = "results/{refGenome}/data/genome/{refGenome}.fna",
-        indexes = expand("results/{{refGenome}}/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
-        dictf = "results/{refGenome}/data/genome/{refGenome}.dict",
-        bam = "results/{refGenome}/bams/{sample}_final.bam",
-        bai = "results/{refGenome}/bams/{sample}_final.bam.bai",
-        l = "results/{refGenome}/intervals/gvcf_intervals/{l}-scattered.interval_list"
+        ref = "results/data/genome/{refGenome}.fasta",
+        indexes = expand("results/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
+        dictf = "results/data/genome/{refGenome}.dict",
+        bam = "results/bams/{sample}_final.bam",
+        bai = "results/bams/{sample}_final.bam.bai",
+        l = "results/intervals/gvcf_intervals/{l}-scattered.interval_list"
     output:
-        gvcf = "results/{refGenome}/interval_gvcfs/{sample}/{l}.raw.g.vcf.gz",
-        gvcf_idx = "results/{refGenome}/interval_gvcfs/{sample}/{l}.raw.g.vcf.gz.tbi"
+        gvcf = "results/interval_gvcfs/{sample}/{l}.raw.g.vcf.gz",
+        gvcf_idx = "results/interval_gvcfs/{sample}/{l}.raw.g.vcf.gz.tbi"
     resources:
         #!The -Xmx value the tool is run with should be less than the total amount of physical memory available by at least a few GB
         # subtract that memory here
@@ -44,8 +44,8 @@ rule concat_gvcfs:
         gvcfs = get_interval_gvcfs,
         tbis = get_interval_gvcfs_idx
     output:
-        gvcf = "results/{refGenome}/gvcfs/{sample}.g.vcf.gz",
-        tbi = "results/{refGenome}/gvcfs/{sample}.g.vcf.gz.tbi"
+        gvcf = "results/gvcfs/{sample}.g.vcf.gz",
+        tbi = "results/gvcfs/{sample}.g.vcf.gz.tbi"
     log:
         "logs/{refGenome}/concat_gvcfs/{sample}.txt"
     benchmark:
@@ -68,7 +68,7 @@ rule create_db_mapfile:
     input:
         get_input_for_mapfile
     output:
-        db_mapfile = "results/{refGenome}/genomics_db_import/DB_mapfile.txt"
+        db_mapfile = "results/genomics_db_import/DB_mapfile.txt"
     run:
         with open(output.db_mapfile, "w") as f:
             for file_path in input:
@@ -81,8 +81,8 @@ rule gvcf2DB:
     """
     input:
         unpack(get_gvcfs_db),
-        l = "results/{refGenome}/intervals/db_intervals/{l}-scattered.interval_list",
-        db_mapfile = "results/{refGenome}/genomics_db_import/DB_mapfile.txt"
+        l = "results/intervals/db_intervals/{l}-scattered.interval_list",
+        db_mapfile = "results/genomics_db_import/DB_mapfile.txt"
     output:
         db = temp(directory("results/{refGenome}/genomics_db_import/DB_L{l}")),
         tar = temp("results/{refGenome}/genomics_db_import/DB_L{l}.tar"),        
@@ -122,8 +122,8 @@ rule DB2vcf:
     """
     input:
         db = "results/{refGenome}/genomics_db_import/DB_L{l}.tar",
-        ref = "results/{refGenome}/data/genome/{refGenome}.fna",
-        fai = "results/{refGenome}/data/genome/{refGenome}.fna.fai",
+        ref = "results/{refGenome}/data/genome/{refGenome}.fasta",
+        fai = "results/{refGenome}/data/genome/{refGenome}.fasta.fai",
         dictf = "results/{refGenome}/data/genome/{refGenome}.dict",
     output:
         vcf = temp("results/{refGenome}/vcfs/intervals/L{l}.vcf.gz"),
@@ -161,8 +161,8 @@ rule filterVcfs:
     input:
         vcf = "results/{refGenome}/vcfs/intervals/L{l}.vcf.gz",
         vcfidx = "results/{refGenome}/vcfs/intervals/L{l}.vcf.gz.tbi",
-        ref = "results/{refGenome}/data/genome/{refGenome}.fna",
-        fai = "results/{refGenome}/data/genome/{refGenome}.fna.fai",
+        ref = "results/{refGenome}/data/genome/{refGenome}.fasta",
+        fai = "results/{refGenome}/data/genome/{refGenome}.fasta.fai",
         dictf = "results/{refGenome}/data/genome/{refGenome}.dict",
     output:
         vcf = temp("results/{refGenome}/vcfs/intervals/filtered_L{l}.vcf.gz"),

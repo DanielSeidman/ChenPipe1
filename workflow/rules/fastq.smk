@@ -35,9 +35,9 @@ rule fastp:
     input:
         unpack(get_reads)
     output:
-        r1 = "results/{refGenome}/filtered_fastqs/{sample}/{run}_1.fastq.gz",
-        r2 = "results/{refGenome}/filtered_fastqs/{sample}/{run}_2.fastq.gz",
-        summ = "results/{refGenome}/summary_stats/{sample}/{run}.fastp.out"
+        r1 = "results/filtered_fastqs/{sample}/{run}_1.fastq.gz",
+        r2 = "results/filtered_fastqs/{sample}/{run}_2.fastq.gz",
+        summ = "results/summary_stats/{sample}/{run}.fastp.out"
     conda:
         "../envs/fastq2bam.yml"
     threads:

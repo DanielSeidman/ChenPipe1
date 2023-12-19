@@ -4,10 +4,10 @@ rule download_reference:
     input:
         ref = get_ref
     output:
-        ref = "results/{refGenome}/data/genome/{refGenome}.fna"
+        ref = "results/data/genome/{refGenome}.fasta"
     params:
-        dataset = "results/{refGenome}/data/genome/{refGenome}_dataset.zip",
-        outdir = "results/{refGenome}/data/genome/{refGenome}"
+        dataset = "results/data/genome/{refGenome}_dataset.zip",
+        outdir = "results/data/genome/{refGenome}"
     conda:
         "../envs/fastq2bam.yml"
     log:
@@ -28,11 +28,11 @@ rule download_reference:
         """
 rule index_reference:
     input:
-        ref = "results/{refGenome}/data/genome/{refGenome}.fna"
+        ref = "results/data/genome/{refGenome}.fasta"
     output:
-        indexes = expand("results/{{refGenome}}/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb"]),
-        fai = "results/{refGenome}/data/genome/{refGenome}.fna.fai",
-        dictf = "results/{refGenome}/data/genome/{refGenome}.dict"
+        indexes = expand("results/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb"]),
+        fai = "results/data/genome/{refGenome}.fasta.fai",
+        dictf = "results/data/genome/{refGenome}.dict"
     conda:
         "../envs/fastq2bam.yml"
     resources:

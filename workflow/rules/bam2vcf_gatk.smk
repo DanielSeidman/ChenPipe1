@@ -5,15 +5,15 @@ rule bam2gvcf:
     TODO
     """
     input:
-        ref = "results/{refGenome}/data/genome/{refGenome}.fna",
-        indexes = expand("results/{{refGenome}}/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
-        dictf = "results/{refGenome}/data/genome/{refGenome}.dict",
-        bam = "results/{refGenome}/bams/{sample}_final.bam",
-        bai = "results/{refGenome}/bams/{sample}_final.bam.bai",
+        ref = "results/data/genome/{refGenome}.fasta",
+        indexes = expand("results/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
+        dictf = "results/data/genome/{refGenome}.dict",
+        bam = "results/bams/{sample}_final.bam",
+        bai = "results/bams/{sample}_final.bam.bai",
         
     output:
-        gvcf = "results/{refGenome}/gvcfs/{sample}.g.vcf.gz",
-        tbi = "results/{refGenome}/gvcfs/{sample}.g.vcf.gz.tbi"
+        gvcf = "results/gvcfs/{sample}.g.vcf.gz",
+        tbi = "results/gvcfs/{sample}.g.vcf.gz.tbi"
     resources:
         #!The -Xmx value the tool is run with should be less than the total amount of physical memory available by at least a few GB
         # subtract that memory here
@@ -45,7 +45,7 @@ rule create_db_mapfile:
     input:
         get_input_for_mapfile
     output:
-        db_mapfile = "results/{refGenome}/genomics_db_import/DB_mapfile.txt"
+        db_mapfile = "results/genomics_db_import/DB_mapfile.txt"
     run:
         with open(output.db_mapfile, "w") as f:
             for file_path in input:
@@ -55,9 +55,9 @@ rule create_db_mapfile:
 rule prepare_db_intervals:
     """GenomicsDBImport needs list of intervals to operate on so this rule writes that file"""
     input:
-        fai = "results/{refGenome}/data/genome/{refGenome}.fna.fai",
+        fai = "results/data/genome/{refGenome}.fasta.fai",
     output:
-        intervals = "results/{refGenome}/genomics_db_import/db_intervals.list"
+        intervals = "results/genomics_db_import/db_intervals.list"
     run:
         with open(output.intervals, "w") as out:
             with open(input.fai, "r") as f:
@@ -72,10 +72,10 @@ rule gvcf2DB:
     """
     input:
         unpack(get_gvcfs_db),
-        db_mapfile = "results/{refGenome}/genomics_db_import/DB_mapfile.txt",
-        intervals = "results/{refGenome}/genomics_db_import/db_intervals.list"
+        db_mapfile = "results/genomics_db_import/DB_mapfile.txt",
+        intervals = "results/genomics_db_import/db_intervals.list"
     output:
-        db = temp(directory("results/{refGenome}/genomics_db_import/DB")),
+        db = temp(directory("results/genomics_db_import/DB")),
         tar = temp("results/{refGenome}/genomics_db_import/DB.tar"),        
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['gvcf2DB']['mem'],   # this is the overall memory requested
@@ -111,7 +111,7 @@ rule DB2vcf:
     """
     input:
         db = "results/{refGenome}/genomics_db_import/DB.tar",
-        ref = "results/{refGenome}/data/genome/{refGenome}.fna",
+        ref = "results/{refGenome}/data/genome/{refGenome}.fasta",
     output:
         vcf = temp("results/{refGenome}/vcfs/raw.vcf.gz"),
         vcfidx = temp("results/{refGenome}/vcfs/raw.vcf.gz.tbi"),
@@ -147,7 +147,7 @@ rule filterVcfs:
     input:
         vcf = "results/{refGenome}/vcfs/raw.vcf.gz",
         vcfidx = "results/{refGenome}/vcfs/raw.vcf.gz.tbi",
-        ref = "results/{refGenome}/data/genome/{refGenome}.fna"
+        ref = "results/{refGenome}/data/genome/{refGenome}.fasta"
     output:
         vcf = temp("results/{refGenome}/vcfs/filtered.vcf.gz"),
         vcfidx = temp("results/{refGenome}/vcfs/filtered.vcf.gz.tbi")

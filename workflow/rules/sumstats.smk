@@ -1,11 +1,11 @@
 rule bam_sumstats:
     input:
-        bam = "results/{refGenome}/bams/{sample}_final.bam",
-        bai = "results/{refGenome}/bams/{sample}_final.bam.bai",
-        ref = "results/{refGenome}/data/genome/{refGenome}.fna",
+        bam = "results/bams/{sample}_final.bam",
+        bai = "results/bams/{sample}_final.bam.bai",
+        ref = "results/data/genome/{refGenome}.fasta",
     output:
-        cov = "results/{refGenome}/summary_stats/{sample}_coverage.txt",
-        alnSum = "results/{refGenome}/summary_stats/{sample}_AlnSumMets.txt",
+        cov = "results/summary_stats/{sample}_coverage.txt",
+        alnSum = "results/summary_stats/{sample}_AlnSumMets.txt",
     conda:
         "../envs/fastq2bam.yml"
     resources:
@@ -18,16 +18,16 @@ rule bam_sumstats:
 
 rule sentieon_bam_stats:
     input:
-        bam = "results/{refGenome}/bams/{sample}_final.bam",
-        bai = "results/{refGenome}/bams/{sample}_final.bam.bai",
-        indexes = expand("results/{{refGenome}}/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
-        ref = "results/{refGenome}/data/genome/{refGenome}.fna"
+        bam = "results/bams/{sample}_final.bam",
+        bai = "results/bams/{sample}_final.bam.bai",
+        indexes = expand("results/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
+        ref = "results/data/genome/{refGenome}.fasta"
     params:
         lic = config['sentieon_lic']
     output:
-        insert_file = "results/{refGenome}/summary_stats/{sample}_insert_metrics.txt",
-        qd = "results/{refGenome}/summary_stats/{sample}_qd_metrics.txt",
-        gc = "results/{refGenome}/summary_stats/{sample}_gc_metrics.txt",
+        insert_file = "results/summary_stats/{sample}_insert_metrics.txt",
+        qd = "results/summary_stats/{sample}_qd_metrics.txt",
+        gc = "results/summary_stats/{sample}_gc_metrics.txt",
         gc_summary = "results/{refGenome}/summary_stats/{sample}_gc_summary.txt",
         mq = "results/{refGenome}/summary_stats/{sample}_mq_metrics.txt"
     conda:

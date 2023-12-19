@@ -7,8 +7,8 @@ REFGENOME = samples['refGenome'].unique().tolist()
 
 rule all:
     input:
-        expand("results/{refGenome}/{prefix}_filtered.vcf.gz", refGenome=REFGENOME, prefix=config['final_prefix']),
-        expand("results/{refGenome}/{prefix}_clean_snps.vcf.gz", refGenome=REFGENOME, prefix=config['final_prefix']),
+        expand("results/{prefix}_filtered.vcf.gz", refGenome=REFGENOME, prefix=config['final_prefix']),
+        expand("results/{prefix}_clean_snps.vcf.gz", refGenome=REFGENOME, prefix=config['final_prefix']),
         expand("results/{refGenome}/{prefix}_clean_indels.vcf.gz", refGenome=REFGENOME, prefix=config['final_prefix'])
 
 rule filter_individuals:
@@ -50,7 +50,7 @@ rule update_bed:
     """
     input:
         bed = "results/{refGenome}/{prefix}_callable_sites.bed",
-        fai = "results/{refGenome}/data/genome/{refGenome}.fna.fai"
+        fai = "results/{refGenome}/data/genome/{refGenome}.fasta.fai"
     output:
         bed = "results/{refGenome}/postprocess/{prefix}_exclude_sites.bed",
         tmp_bed = temp("results/{refGenome}/postprocess/{prefix}_tmp.bed")

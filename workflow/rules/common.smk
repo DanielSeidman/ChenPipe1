@@ -25,9 +25,9 @@ def get_output():
     sample_counts = samples.drop_duplicates(subset = ["BioSample", "refGenome"]).value_counts(subset=['refGenome'])  #get BioSample for each refGenome
     out.extend
     for ref in genomes:
-        out.extend(expand("results/{refGenome}/{prefix}_raw.vcf.gz", refGenome=ref, prefix=config['final_prefix']))
-        out.extend(expand("results/{refGenome}/summary_stats/{prefix}_bam_sumstats.txt", refGenome=ref, prefix=config['final_prefix']))
-        out.extend(expand("results/{refGenome}/{prefix}_callable_sites.bed", refGenome=ref, prefix=config['final_prefix']))
+        out.extend(expand("results/{prefix}_raw.vcf.gz", refGenome=ref, prefix=config['final_prefix']))
+        out.extend(expand("results/summary_stats/{prefix}_bam_sumstats.txt", refGenome=ref, prefix=config['final_prefix']))
+        #out.extend(expand("results/{prefix}_callable_sites.bed", refGenome=ref, prefix=config['final_prefix']))#Do not want this in current version for anything
         if sample_counts[ref] > 2:
             out.append(rules.qc_all.input)
         if "SampleType" in samples.columns:
@@ -41,7 +41,7 @@ def get_output():
     return out
 
 def merge_bams_input(wc):
-    return expand("results/{{refGenome}}/bams/preMerge/{{sample}}/{run}.bam", run=samples.loc[samples['BioSample'] == wc.sample]['Run'].tolist())
+    return expand("results/bams/preMerge/{{sample}}/{run}.bam", run=samples.loc[samples['BioSample'] == wc.sample]['Run'].tolist())
 
 def get_ref(wildcards):
     if 'refPath' in samples.columns:
@@ -66,7 +66,7 @@ def get_interval_gvcfs(wc):
         lines = [l.strip() for l in f.readlines()]
     list_files = [os.path.basename(x) for x in lines]
     list_numbers = [f.replace("-scattered.interval_list", "") for f in list_files]
-    gvcfs = expand("results/{{refGenome}}/interval_gvcfs/{{sample}}/{l}.raw.g.vcf.gz", l=list_numbers)
+    gvcfs = expand("results/interval_gvcfs/{{sample}}/{l}.raw.g.vcf.gz", l=list_numbers)
     
     return gvcfs
 
@@ -86,7 +86,7 @@ def get_interval_vcfs(wc):
     list_files = [os.path.basename(x) for x in lines]
     
     list_numbers = [f.replace("-scattered.interval_list", "") for f in list_files]
-    vcfs = expand("results/{{refGenome}}/vcfs/intervals/filtered_L{l}.vcf.gz", l=list_numbers)
+    vcfs = expand("results/vcfs/intervals/filtered_L{l}.vcf.gz", l=list_numbers)
     
     return vcfs
 
@@ -96,25 +96,25 @@ def get_interval_vcfs_idx(wc):
     
 def get_gvcfs_db(wc):
     _samples = samples.loc[(samples['refGenome'] == wc.refGenome)]['BioSample'].unique().tolist()
-    gvcfs = expand("results/{{refGenome}}/gvcfs/{sample}.g.vcf.gz", sample=_samples)
-    tbis = expand("results/{{refGenome}}/gvcfs/{sample}.g.vcf.gz.tbi", sample=_samples)
+    gvcfs = expand("results/gvcfs/{sample}.g.vcf.gz", sample=_samples)
+    tbis = expand("results/gvcfs/{sample}.g.vcf.gz.tbi", sample=_samples)
     return {"gvcfs": gvcfs, "tbis": tbis}
 
 def dedup_input(wc):
     runs = samples.loc[samples['BioSample'] == wc.sample]['Run'].tolist()
     
     if len(runs) == 1:
-        bam = expand("results/{{refGenome}}/bams/preMerge/{{sample}}/{run}.bam", run=runs)
-        bai = expand("results/{{refGenome}}/bams/preMerge/{{sample}}/{run}.bam.bai", run=runs)
+        bam = expand("results/bams/preMerge/{{sample}}/{run}.bam", run=runs)
+        bai = expand("results/bams/preMerge/{{sample}}/{run}.bam.bai", run=runs)
     else:
-        bam = "results/{refGenome}/bams/postMerge/{sample}.bam"
-        bai = "results/{refGenome}/bams/postMerge/{sample}.bam.bai"
+        bam = "results/bams/postMerge/{sample}.bam"
+        bai = "results/bams/postMerge/{sample}.bam.bai"
     return {"bam": bam, "bai": bai}
 
 def sentieon_combine_gvcf_input(wc):
     _samples = samples['BioSample'].unique().tolist()
-    gvcfs = expand("results/{{refGenome}}/gvcfs/{sample}.g.vcf.gz", sample=_samples)
-    tbis = expand("results/{{refGenome}}/gvcfs/{sample}.g.vcf.gz.tbi", sample=_samples)
+    gvcfs = expand("results/gvcfs/{sample}.g.vcf.gz", sample=_samples)
+    tbis = expand("results/gvcfs/{sample}.g.vcf.gz.tbi", sample=_samples)
     return {"gvcfs": gvcfs, "tbis": tbis}
 
 def get_reads(wc):
@@ -144,7 +144,7 @@ def get_remote_reads(wildcards):
     return {"r1": r1, "r2": r2}
 
 def collect_fastp_stats_input(wc):
-    return expand("results/{{refGenome}}/summary_stats/{{sample}}/{run}.fastp.out", run=samples.loc[samples['BioSample'] == wc.sample]['Run'].tolist())
+    return expand("results/summary_stats/{{sample}}/{run}.fastp.out", run=samples.loc[samples['BioSample'] == wc.sample]['Run'].tolist())
 
 def get_read_group(wc):
     """Denote sample name and library_id in read group."""
@@ -156,14 +156,14 @@ def get_read_group(wc):
 
 def get_input_sumstats(wildcards):
     _samples = samples.loc[(samples['refGenome'] == wildcards.refGenome)]['BioSample'].unique().tolist()
-    aln = expand("results/{{refGenome}}/summary_stats/{sample}_AlnSumMets.txt", sample=_samples)
-    cov = expand("results/{{refGenome}}/summary_stats/{sample}_coverage.txt", sample=_samples)
-    fastp = expand("results/{{refGenome}}/summary_stats/{sample}_fastp.out", sample=_samples)
-    insert = expand("results/{{refGenome}}/summary_stats/{sample}_insert_metrics.txt", sample=_samples)
-    qd = expand("results/{{refGenome}}/summary_stats/{sample}_qd_metrics.txt", sample=_samples)
-    mq = expand("results/{{refGenome}}/summary_stats/{sample}_mq_metrics.txt", sample=_samples)
-    gc = expand("results/{{refGenome}}/summary_stats/{sample}_gc_metrics.txt", sample=_samples)
-    gc_summary = expand("results/{{refGenome}}/summary_stats/{sample}_gc_summary.txt", sample=_samples)
+    aln = expand("results/summary_stats/{sample}_AlnSumMets.txt", sample=_samples)
+    cov = expand("results/summary_stats/{sample}_coverage.txt", sample=_samples)
+    fastp = expand("results/summary_stats/{sample}_fastp.out", sample=_samples)
+    insert = expand("results/summary_stats/{sample}_insert_metrics.txt", sample=_samples)
+    qd = expand("results/summary_stats/{sample}_qd_metrics.txt", sample=_samples)
+    mq = expand("results/summary_stats/{sample}_mq_metrics.txt", sample=_samples)
+    gc = expand("results/summary_stats/{sample}_gc_metrics.txt", sample=_samples)
+    gc_summary = expand("results/summary_stats/{sample}_gc_summary.txt", sample=_samples)
     if config['sentieon']:
         out = {
             "alnSumMetsFiles": aln,
@@ -186,18 +186,18 @@ def get_input_sumstats(wildcards):
 
 def get_input_for_mapfile(wildcards):
     sample_names = samples.loc[(samples['refGenome'] == wildcards.refGenome)]['BioSample'].unique().tolist()
-    return expand("results/{{refGenome}}/gvcfs/{sample}.g.vcf.gz", sample=sample_names)
+    return expand("results/gvcfs/{sample}.g.vcf.gz", sample=sample_names)
 
 def get_input_for_coverage(wildcards):
     # Gets the correct sample given the organism and reference genome for the bedgraph merge step
     _samples = samples.loc[(samples['refGenome'] == wildcards.refGenome)]['BioSample'].unique().tolist()
-    d4files = expand("results/{{refGenome}}/callable_sites/{sample}.per-base.d4", sample=_samples)
+    d4files = expand("results/callable_sites/{sample}.per-base.d4", sample=_samples)
     return {'d4files': d4files}
 
 def get_input_covstats(wildcards):
     # Gets the correct sample given the organism and reference genome for the bedgraph merge step
     _samples = samples.loc[(samples['refGenome'] == wildcards.refGenome)]['BioSample'].unique().tolist()
-    covstats = expand("results/{{refGenome}}/callable_sites/{sample}.mosdepth.summary.txt", sample=_samples)
+    covstats = expand("results/callable_sites/{sample}.mosdepth.summary.txt", sample=_samples)
     return {'covStatFiles': covstats}
 
 def get_bedgraphs(wildcards):

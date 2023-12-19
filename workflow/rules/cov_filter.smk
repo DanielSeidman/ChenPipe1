@@ -1,11 +1,11 @@
 rule compute_d4:
     input:
-        bam = "results/{refGenome}/bams/{sample}_final.bam",
-        bai = "results/{refGenome}/bams/{sample}_final.bam.bai",
+        bam = "results/bams/{sample}_final.bam",
+        bai = "results/bams/{sample}_final.bam.bai",
     output:
-        "results/{refGenome}/callable_sites/{sample}.mosdepth.global.dist.txt",
-        temp("results/{refGenome}/callable_sites/{sample}.per-base.d4"),
-        summary="results/{refGenome}/callable_sites/{sample}.mosdepth.summary.txt"
+        "results/callable_sites/{sample}.mosdepth.global.dist.txt",
+        temp("results/callable_sites/{sample}.per-base.d4"),
+        summary="results/callable_sites/{sample}.mosdepth.summary.txt"
     conda:
         "../envs/cov_filter.yml"
     log:

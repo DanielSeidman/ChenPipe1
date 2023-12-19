@@ -1,10 +1,10 @@
 rule picard_intervals:
     input:
-        ref = "results/{refGenome}/data/genome/{refGenome}.fna",
-        fai = "results/{refGenome}/data/genome/{refGenome}.fna.fai",
-        dictf = "results/{refGenome}/data/genome/{refGenome}.dict"
+        ref = "results/data/genome/{refGenome}.fasta",
+        fai = "results/data/genome/{refGenome}.fasta.fai",
+        dictf = "results/data/genome/{refGenome}.dict"
     output:
-        intervals = temp("results/{refGenome}/intervals/picard_interval_list.list")
+        intervals = temp("results/intervals/picard_interval_list.list")
     params:
         minNmer = int(config['minNmer'])
     conda:
@@ -20,9 +20,9 @@ rule picard_intervals:
 
 rule format_interval_list:
     input:
-        intervals = "results/{refGenome}/intervals/picard_interval_list.list"
+        intervals = "results/intervals/picard_interval_list.list"
     output:
-        intervals = "results/{refGenome}/intervals/master_interval_list.list"
+        intervals = "results/intervals/master_interval_list.list"
     run:
         with open(output.intervals, "w") as out:
             with open(input.intervals, "r") as inp:
@@ -35,13 +35,13 @@ rule format_interval_list:
 
 checkpoint create_db_intervals:
     input:
-        ref = "results/{refGenome}/data/genome/{refGenome}.fna",
-        fai = "results/{refGenome}/data/genome/{refGenome}.fna.fai",
-        dictf = "results/{refGenome}/data/genome/{refGenome}.dict",
-        intervals = "results/{refGenome}/intervals/master_interval_list.list"
+        ref = "results/data/genome/{refGenome}.fasta",
+        fai = "results/data/genome/{refGenome}.fasta.fai",
+        dictf = "results/data/genome/{refGenome}.dict",
+        intervals = "results/intervals/master_interval_list.list"
     output:
-        fof = "results/{refGenome}/intervals/db_intervals/intervals.txt",
-        out_dir = directory("results/{refGenome}/intervals/db_intervals"),
+        fof = "results/intervals/db_intervals/intervals.txt",
+        out_dir = directory("results/intervals/db_intervals"),
     params:
         max_intervals = get_db_interval_count
     log:
@@ -63,8 +63,8 @@ checkpoint create_db_intervals:
 
 checkpoint create_gvcf_intervals:
     input:
-        ref = "results/{refGenome}/data/genome/{refGenome}.fna",
-        fai = "results/{refGenome}/data/genome/{refGenome}.fna.fai",
+        ref = "results/{refGenome}/data/genome/{refGenome}.fasta",
+        fai = "results/{refGenome}/data/genome/{refGenome}.fasta.fai",
         dictf = "results/{refGenome}/data/genome/{refGenome}.dict",
         intervals = "results/{refGenome}/intervals/master_interval_list.list"
     output:
