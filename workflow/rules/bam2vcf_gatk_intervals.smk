@@ -5,7 +5,7 @@ rule bam2gvcf:
     TODO
     """
     input:
-        ref = "results/data/genome/{refGenome}.fasta",
+
         indexes = expand("results/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
         dictf = "results/data/genome/{refGenome}.dict",
         bam = "results/bams/{sample}_final.bam",
@@ -24,6 +24,7 @@ rule bam2gvcf:
     benchmark:
         "benchmarks/gatk_hc/{sample}_{l}.txt"
     params:
+        ref = config["reference"],
         minPrun = config['minP'],
         minDang = config['minD'],
         ploidy = config['ploidy'],
@@ -32,7 +33,7 @@ rule bam2gvcf:
     shell:
         "gatk HaplotypeCaller "
         "--java-options \"-Xmx{resources.reduced}m\" "
-        "-R {input.ref} "
+        "-R {params.ref} "
         "-I {input.bam} "
         "-O {output.gvcf} "
         "-L {input.l} "
@@ -122,9 +123,9 @@ rule DB2vcf:
     """
     input:
         db = "results/genomics_db_import/DB_L{l}.tar",
-        ref = "results/data/genome/{refGenome}.fasta",
-        fai = "results/data/genome/{refGenome}.fasta.fai",
-        dictf = "results/data/genome/{refGenome}.dict",
+        ref = "{config["reference"]}.fasta",
+        fai = "{ref}.fasta.fai",
+        dictf = "{ref}.dict",
     output:
         vcf = temp("results/vcfs/intervals/L{l}.vcf.gz"),
         vcfidx = temp("results/vcfs/intervals/L{l}.vcf.gz.tbi"),
@@ -161,9 +162,9 @@ rule filterVcfs:
     input:
         vcf = "results/vcfs/intervals/L{l}.vcf.gz",
         vcfidx = "results/vcfs/intervals/L{l}.vcf.gz.tbi",
-        ref = "results/data/genome/{refGenome}.fasta",
-        fai = "results/data/genome/{refGenome}.fasta.fai",
-        dictf = "results/data/genome/{refGenome}.dict",
+        ref = config["reference"],
+        fai = "{ref}.fasta.fai",
+        dictf = "{ref}.dict",
     output:
         vcf = temp("results/vcfs/intervals/filtered_L{l}.vcf.gz"),
         vcfidx = temp("results/vcfs/intervals/filtered_L{l}.vcf.gz.tbi")

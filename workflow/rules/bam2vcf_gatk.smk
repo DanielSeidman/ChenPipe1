@@ -5,7 +5,6 @@ rule bam2gvcf:
     TODO
     """
     input:
-        ref = "results/data/genome/{refGenome}.fasta",
         indexes = expand("results/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
         dictf = "results/data/genome/{refGenome}.dict",
         bam = "results/bams/{sample}_final.bam",
@@ -17,6 +16,7 @@ rule bam2gvcf:
     resources:
         #!The -Xmx value the tool is run with should be less than the total amount of physical memory available by at least a few GB
         # subtract that memory here
+
         mem_mb = lambda wildcards, attempt: attempt * resources['bam2gvcf']['mem'],   # this is the overall memory requested
         reduced = lambda wildcards, attempt: attempt * (resources['bam2gvcf']['mem'] - 3000)  # this is the maximum amount given to java
     log:
@@ -26,13 +26,14 @@ rule bam2gvcf:
     params:
         minPrun = config['minP'],
         minDang = config['minD'],
-        ploidy = config['ploidy']
+        ploidy = config['ploidy'],
+        ref = config['reference']
     conda:
         "../envs/bam2vcf.yml"
     shell:
         "gatk HaplotypeCaller "
         "--java-options \"-Xmx{resources.reduced}m\" "
-        "-R {input.ref} "
+        "-R {params.ref} "
         "-I {input.bam} "
         "-O {output.gvcf} "
         "-ploidy {params.ploidy} "
@@ -111,13 +112,14 @@ rule DB2vcf:
     """
     input:
         db = "results/genomics_db_import/DB.tar",
-        ref = "results/data/genome/{refGenome}.fasta",
     output:
         vcf = temp("results/vcfs/raw.vcf.gz"),
         vcfidx = temp("results/vcfs/raw.vcf.gz.tbi"),
     params:
         het = config['het_prior'],
-        db = lambda wc, input: input.db[:-4]
+        db = lambda wc, input: input.db[:-4],
+        ref = config['reference']
+
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['DB2vcf']['mem'],   # this is the overall memory requested
         reduced = lambda wildcards, attempt: attempt * (resources['DB2vcf']['mem'] - 3000)  # this is the maximum amount given to java
@@ -132,7 +134,7 @@ rule DB2vcf:
         tar -xf {input.db}
         gatk GenotypeGVCFs \
             --java-options '-Xmx{resources.reduced}m -Xms{resources.reduced}m' \
-            -R {input.ref} \
+            -R {params.ref} \
             --heterozygosity {params.het} \
             --genomicsdb-shared-posixfs-optimizations true \
             -V gendb://{params.db} \
@@ -147,12 +149,13 @@ rule filterVcfs:
     input:
         vcf = "results/vcfs/raw.vcf.gz",
         vcfidx = "results/vcfs/raw.vcf.gz.tbi",
-        ref = "results/data/genome/{refGenome}.fasta"
     output:
         vcf = temp("results/vcfs/filtered.vcf.gz"),
         vcfidx = temp("results/vcfs/filtered.vcf.gz.tbi")
     conda:
         "../envs/bam2vcf.yml"
+    params:
+        ref = config['reference']
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['filterVcfs']['mem']   # this is the overall memory requested
     log:
@@ -161,7 +164,7 @@ rule filterVcfs:
         "benchmarks/gatk_filter.txt"
     shell:
         "gatk VariantFiltration "
-        "-R {input.ref} "
+        "-R {params.ref} "
         "-V {input.vcf} "
         "--output {output.vcf} "
         "--filter-name \"RPRS_filter\" "

@@ -1,9 +1,7 @@
 rule trim_galore_call:
     input:
-        ref="results/data/genome/{refGenome}.fasta",
         r1="results/filtered_fastqs/{sample}/{run}_1.fastq.gz",
         r2="results/filtered_fastqs/{sample}/{run}_2.fastq.gz",
-        indexes=expand("results/data/genome/{{refGenome}}.fna.{ext}",ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
     output:
         r1trim="results/filtered_fastqs/{sample}/{run}_trimgalore/{run}_1.fastq.gz",
         r2trim="results/filtered_fastqs/{sample}/{run}_trimgalore/{run}_2.fastq.gz",
@@ -13,21 +11,23 @@ rule trim_galore_call:
         resources['trim_galore_call']['threads']
     resources:
         mem_mb = lambda wildcards,attempt: attempt * resources['trim_galore_call']['mem']
+
     shell:
         "trim_galore --paired {input.r1} {input.r2} -o {run}_trimgalore/ "
 
 
 rule bwa_map:
+    params:
+        rg=get_read_group,
+        ref=config['reference']
     input:
-        ref = "results/data/genome/{refGenome}.fasta",
         r1 = "results/filtered_fastqs/{sample}/{run}_trimgalore/{run}_1.fastq.gz",
         r2 = "results/filtered_fastqs/{sample}/{run}_trimgalore/{run}_2.fastq.gz",
-        indexes = expand("results/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
+        indexes = expand("{params.ref}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
     output: 
         bam = temp("results/bams/preMerge/{sample}/{run}.bam"),
         bai = temp("results/bams/preMerge/{sample}/{run}.bam.bai"),
-    params:
-        rg = get_read_group
+
     conda:
         "../envs/fastq2bam.yml"
     threads:
