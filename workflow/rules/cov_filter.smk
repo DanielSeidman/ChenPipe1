@@ -9,15 +9,15 @@ rule compute_d4:
     conda:
         "../envs/cov_filter.yml"
     log:
-        "logs/{refGenome}/compute_d4/{sample}.txt"
+        "logs/compute_d4/{sample}.txt"
     benchmark:
-        "benchmarks/{refGenome}/compute_d4/{sample}.txt"
+        "benchmarks/compute_d4/{sample}.txt"
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['compute_d4']['mem']
     threads:
         resources['compute_d4']['threads']
     params:
-        prefix = os.path.join(workflow.default_remote_prefix, "results/{refGenome}/callable_sites/{sample}")
+        prefix = os.path.join(workflow.default_remote_prefix, "results/callable_sites/{sample}")
     shell:
         "mosdepth --d4 -t {threads} {params.prefix} {input.bam} &> {log}"
 
@@ -25,13 +25,13 @@ rule merge_d4:
     input:
         unpack(get_input_for_coverage)
     output:
-        "results/{refGenome}/callable_sites/all_samples.d4"
+        "results/callable_sites/all_samples.d4"
     conda:
         "../envs/cov_filter.yml"
     log:
-        "logs/{refGenome}/merge_d4/log.txt"
+        "logs/merge_d4/log.txt"
     benchmark:
-        "benchmarks/{refGenome}/merge_d4/benchmark.txt"
+        "benchmarks/merge_d4/benchmark.txt"
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['merge_d4']['mem']
     shell:
@@ -41,7 +41,7 @@ rule collect_covstats:
     input:
         unpack(get_input_covstats)
     output:
-        "results/{refGenome}/summary_stats/all_cov_sumstats.txt"  
+        "results/summary_stats/all_cov_sumstats.txt"
     run:
         covStats = collectCovStats(input.covStatFiles)
         with open(output[0], "w") as f:
@@ -51,12 +51,12 @@ rule collect_covstats:
 
 rule create_cov_bed:
     input:
-        stats = "results/{refGenome}/summary_stats/all_cov_sumstats.txt",
-        d4 = "results/{refGenome}/callable_sites/all_samples.d4"
+        stats = "results/summary_stats/all_cov_sumstats.txt",
+        d4 = "results/callable_sites/all_samples.d4"
     output:
-        covbed = "results/{refGenome}/callable_sites/{prefix}_callable_sites_cov.bed"
+        covbed = "results/callable_sites/{prefix}_callable_sites_cov.bed"
     benchmark:
-        "benchmarks/{refGenome}/covbed/{prefix}_benchmark.txt"
+        "benchmarks/covbed/{prefix}_benchmark.txt"
     params:
         cov_threshold_stdev = config["cov_threshold_stdev"],
         cov_threshold_lower = config["cov_threshold_lower"],
@@ -69,15 +69,15 @@ rule create_cov_bed:
 
 rule callable_bed:
     input:
-        cov = "results/{refGenome}/callable_sites/{prefix}_callable_sites_cov.bed",
-        map = "results/{refGenome}/callable_sites/{prefix}_callable_sites_map.bed"
+        cov = "results/callable_sites/{prefix}_callable_sites_cov.bed",
+        map = "results/callable_sites/{prefix}_callable_sites_map.bed"
     output:
-        callable_sites = "results/{refGenome}/{prefix}_callable_sites.bed",
-        tmp_cov = temp("results/{refGenome}/callable_sites/{prefix}_temp_cov.bed")
+        callable_sites = "results/{prefix}_callable_sites.bed",
+        tmp_cov = temp("results/callable_sites/{prefix}_temp_cov.bed")
     conda:
         "../envs/cov_filter.yml"
     benchmark:
-        "benchmarks/{refGenome}/callable_bed/{prefix}_benchmark.txt"
+        "benchmarks/callable_bed/{prefix}_benchmark.txt"
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['callable_bed']['mem']
     params:

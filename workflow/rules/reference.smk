@@ -11,9 +11,9 @@ rule download_reference:
     conda:
         "../envs/fastq2bam.yml"
     log:
-        "logs/{refGenome}/download_ref/log.txt"
+        "logs/download_ref/log.txt"
     benchmark:
-        "benchmarks/{refGenome}/download_ref/benchmark.txt"
+        "benchmarks/download_ref/benchmark.txt"
     shell:
         """
         if [ -z "{input.ref}" ]  # check if this is empty
@@ -38,9 +38,9 @@ rule index_reference:
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['index_ref']['mem']
     log:
-        "logs/{refGenome}/index_ref/log.txt"
+        "logs/index_ref/log.txt"
     benchmark:
-        "benchmarks/{refGenome}/index_ref/benchmark.txt"
+        "benchmarks/index_ref/benchmark.txt"
     shell:
         """
         bwa index {input.ref} 2> {log}

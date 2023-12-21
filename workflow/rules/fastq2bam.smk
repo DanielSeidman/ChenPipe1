@@ -35,9 +35,9 @@ rule bwa_map:
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['bwa_map']['mem']
     log:
-        "logs/{refGenome}/bwa_mem/{sample}/{run}.txt"
+        "logs/bwa_mem/{sample}/{run}.txt"
     benchmark:
-        "benchmarks/{refGenome}/bwa_mem/{sample}_{run}.txt"
+        "benchmarks/bwa_mem/{sample}_{run}.txt"
     shell:
         "bwa mem -M -t {threads} -R {params.rg} {input.ref} {input.r1} {input.r2} 2> {log} | samtools sort -o {output.bam} - && samtools index {output.bam} {output.bai}"
 
@@ -50,9 +50,9 @@ rule merge_bams:
     conda:
         "../envs/fastq2bam.yml"
     log:
-        "logs/{refGenome}/merge_bams/{sample}.txt"
+        "logs/merge_bams/{sample}.txt"
     benchmark:
-        "benchmarks/{refGenome}/merge_bams/{sample}.txt"
+        "benchmarks/merge_bams/{sample}.txt"
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['merge_bams']['mem']
     shell:
@@ -70,8 +70,8 @@ rule dedup:
         threads = resources['dedup']['threads'],
         mem_mb = lambda wildcards, attempt: attempt * resources['dedup']['mem']
     log:
-        "logs/{refGenome}/sambamba_dedup/{sample}.txt"
+        "logs/sambamba_dedup/{sample}.txt"
     benchmark:
-        "benchmarks/{refGenome}/sambamba_dedup/{sample}.txt"
+        "benchmarks/sambamba_dedup/{sample}.txt"
     shell:
         "sambamba markdup -t {threads} {input.bam} {output.dedupBam} 2> {log}"

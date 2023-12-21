@@ -9,9 +9,9 @@ rule genmap:
         outdir = os.path.join(workflow.default_remote_prefix, "results/genmap"),
         kmer = config['mappability_k']
     log:
-        "logs/{refGenome}/genmap/log.txt"
+        "logs/genmap/log.txt"
     benchmark:
-        "benchmarks/{refGenome}/genmap/benchmark.txt"
+        "benchmarks/genmap/benchmark.txt"
     conda:
         "../envs/mappability.yml"
     resources:
@@ -35,7 +35,7 @@ rule mappability_bed:
     conda:
         "../envs/mappability.yml"
     benchmark:
-        "benchmarks/{refGenome}/mapbed/{prefix}_benchmark.txt"
+        "benchmarks/mapbed/{prefix}_benchmark.txt"
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['callable_bed']['mem']
     params:

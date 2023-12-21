@@ -1,15 +1,15 @@
 rule get_fastq_pe:
     output:
-        temp("results/data/fastq/{refGenome}/{sample}/{run}_1.fastq.gz"),
-        temp("results/data/fastq/{refGenome}/{sample}/{run}_2.fastq.gz")
+        temp("results/data/fastq/{sample}/{run}_1.fastq.gz"),
+        temp("results/data/fastq/{sample}/{run}_2.fastq.gz")
     params:
-        outdir = os.path.join(workflow.default_remote_prefix, "results/data/fastq/{refGenome}/{sample}/")
+        outdir = os.path.join(workflow.default_remote_prefix, "results/data/fastq/{sample}/")
     conda:
         "../envs/fastq2bam.yml"
     threads:
         resources['get_fastq_pe']['threads']
     benchmark:
-        "benchmarks/{refGenome}/getfastq/{sample}_{run}.txt"
+        "benchmarks/getfastq/{sample}_{run}.txt"
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['get_fastq_pe']['mem'],
         tmpdir = get_big_temp
@@ -45,9 +45,9 @@ rule fastp:
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['fastp']['mem'],
     log:
-        "logs/{refGenome}/fastp/{sample}/{run}.txt"
+        "logs/fastp/{sample}/{run}.txt"
     benchmark:
-        "benchmarks/{refGenome}/fastp/{sample}_{run}.txt"
+        "benchmarks/fastp/{sample}_{run}.txt"
     shell:
         "fastp --in1 {input.r1} --in2 {input.r2} "
         "--out1 {output.r1} --out2 {output.r2} "

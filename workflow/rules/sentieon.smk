@@ -2,11 +2,11 @@ rule sentieon_map:
     input:
         ref = "results/data/genome/{refGenome}.fasta",
         r1 = "results/filtered_fastqs/{sample}/{run}_1.fastq.gz",
-        r2 = "results/{refGenome}/filtered_fastqs/{sample}/{run}_2.fastq.gz",
+        r2 = "results/filtered_fastqs/{sample}/{run}_2.fastq.gz",
         indexes = expand("results/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"])
     output: 
-        bam = temp("results/{refGenome}/bams/preMerge/{sample}/{run}.bam"),
-        bai = temp("results/{refGenome}/bams/preMerge/{sample}/{run}.bam.bai"),
+        bam = temp("results/bams/preMerge/{sample}/{run}.bam"),
+        bai = temp("results/bams/preMerge/{sample}/{run}.bam.bai"),
     params:
         rg = get_read_group,
         lic = config['sentieon_lic']
@@ -14,9 +14,9 @@ rule sentieon_map:
         "../envs/sentieon.yml"
     threads: resources['sentieon_map']['threads']
     log:
-        "logs/{refGenome}/sentieon_map/{sample}/{run}.txt"
+        "logs/sentieon_map/{sample}/{run}.txt"
     benchmark:
-        "benchmarks/{refGenome}/sentieon_map/{sample}/{run}.txt"
+        "benchmarks/sentieon_map/{sample}/{run}.txt"
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['sentieon_map']['mem'],
         machine_type = resources['sentieon_map']['machine_type']
@@ -31,14 +31,14 @@ rule merge_bams:
     input:
         merge_bams_input
     output:
-        bam = temp("results/{refGenome}/bams/postMerge/{sample}.bam"),
-        bai = temp("results/{refGenome}/bams/postMerge/{sample}.bam.bai")
+        bam = temp("results/bams/postMerge/{sample}.bam"),
+        bai = temp("results/bams/postMerge/{sample}.bam.bai")
     conda:
         "../envs/fastq2bam.yml"
     log:
-        "logs/{refGenome}/merge_bams/{sample}.txt"
+        "logs/merge_bams/{sample}.txt"
     benchmark:
-        "benchmarks/{refGenome}/merge_bams/{sample}.txt"
+        "benchmarks/merge_bams/{sample}.txt"
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['merge_bams']['mem']
     shell:
@@ -48,18 +48,18 @@ rule sentieon_dedup:
     input:
         unpack(dedup_input),
     output:
-        dedupBam = "results/{refGenome}/bams/{sample}_final.bam",
-        dedupBai = "results/{refGenome}/bams/{sample}_final.bam.bai",
-        score = temp("results/{refGenome}/summary_stats/{sample}/sentieon_dedup_score.txt"),
-        metrics = temp("results/{refGenome}/summary_stats/{sample}/sentieon_dedup_metrics.txt")
+        dedupBam = "results/bams/{sample}_final.bam",
+        dedupBai = "results/bams/{sample}_final.bam.bai",
+        score = temp("results/summary_stats/{sample}/sentieon_dedup_score.txt"),
+        metrics = temp("results/summary_stats/{sample}/sentieon_dedup_metrics.txt")
     params:
         lic = config['sentieon_lic']
     conda:
         "../envs/sentieon.yml"
     log:
-        "logs/{refGenome}/sentieon_dedup/{sample}.txt"
+        "logs/sentieon_dedup/{sample}.txt"
     benchmark:
-        "benchmarks/{refGenome}/sentieon_dedup/{sample}.txt"
+        "benchmarks/sentieon_dedup/{sample}.txt"
     threads: 
         resources['sentieon_dedup']['threads']
     resources:
@@ -74,17 +74,17 @@ rule sentieon_dedup:
 
 rule sentieon_haplotyper:
     input:
-        ref = "results/{refGenome}/data/genome/{refGenome}.fasta",
+        ref = "results/data/genome/{refGenome}.fasta",
         indexes = expand("results/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
-        dictf = "results/{refGenome}/data/genome/{refGenome}.dict",
-        bam = "results/{refGenome}/bams/{sample}_final.bam",
-        bai = "results/{refGenome}/bams/{sample}_final.bam.bai"
+        dictf = "results/data/genome/{refGenome}.dict",
+        bam = "results/bams/{sample}_final.bam",
+        bai = "results/bams/{sample}_final.bam.bai"
     params:
         lic = config['sentieon_lic'],
         ploidy = config['ploidy']
     output:
-        gvcf = "results/{refGenome}/gvcfs/{sample}.g.vcf.gz",
-        gvcf_idx = "results/{refGenome}/gvcfs/{sample}.g.vcf.gz.tbi",
+        gvcf = "results/gvcfs/{sample}.g.vcf.gz",
+        gvcf_idx = "results/gvcfs/{sample}.g.vcf.gz.tbi",
     threads: resources['sentieon_haplotyper']['threads']
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['sentieon_haplotyper']['mem'],
@@ -92,9 +92,9 @@ rule sentieon_haplotyper:
     conda:
         "../envs/sentieon.yml"
     log:
-        "logs/{refGenome}/sentieon_haplotyper/{sample}.txt"
+        "logs/sentieon_haplotyper/{sample}.txt"
     benchmark:
-        "benchmarks/{refGenome}/sentieon_haplotyper/{sample}.txt"
+        "benchmarks/sentieon_haplotyper/{sample}.txt"
     shell:
         """
         export SENTIEON_LICENSE={params.lic}
@@ -104,11 +104,11 @@ rule sentieon_haplotyper:
 rule sentieon_combine_gvcf:
     input:
         unpack(sentieon_combine_gvcf_input),
-        ref = "results/{refGenome}/data/genome/{refGenome}.fasta",
+        ref = "results/data/genome/{refGenome}.fasta",
         indexes = expand("results/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
-        dictf = "results/{refGenome}/data/genome/{refGenome}.dict"
+        dictf = "results/data/genome/{refGenome}.dict"
     output:
-        vcf = temp("results/{refGenome}/vcfs/raw.vcf.gz"),
+        vcf = temp("results/vcfs/raw.vcf.gz"),
         tbi = temp("results/{refGenome}/vcfs/raw.vcf.gz.tbi")
     params:
         glist = lambda wc, input: " ".join(["-v " + gvcf for gvcf in input['gvcfs']]),

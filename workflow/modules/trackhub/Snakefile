@@ -19,13 +19,13 @@ rule write_hub_files:
     input:
         window_stat_files = expand("results/trackhub/{file_type}_{window}.bw", file_type=FILE_TYPES, window=WINDOWS),
         vcf = expand("results/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
-        callable_sites = "results/{refGenome}/trackhub/non_callable_sites.bb",
-        allele_freq = "results/{refGenome}/trackhub/allele_freq.bw",
-        depth = "results/{refGenome}/trackhub/depth.bw",
+        callable_sites = "results/trackhub/non_callable_sites.bb",
+        allele_freq = "results/trackhub/allele_freq.bw",
+        depth = "results/trackhub/depth.bw",
         
     output:
-        trackhub_file = "results/{refGenome}/trackhub/hub.txt",
-        html = "results/{refGenome}/trackhub/index.html"
+        trackhub_file = "results/trackhub/hub.txt",
+        html = "results/trackhub/index.html"
     params:
         refGenome = "{refGenome}",
         file_types = FILE_TYPES,
@@ -41,10 +41,10 @@ rule strip_vcf:
     input:
         vcf = expand("results/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
     output:
-        vcf = "results/{refGenome}/trackhub/info_stripped_snps.vcf.gz",
-        tbi = "results/{refGenome}/trackhub/info_stripped_snps.vcf.gz.tbi"
+        vcf = "results/trackhub/info_stripped_snps.vcf.gz",
+        tbi = "results/trackhub/info_stripped_snps.vcf.gz.tbi"
     log:
-        "logs/{refGenome}/trackhub/strip_vcf.log"
+        "logs/trackhub/strip_vcf.log"
     conda:
         "envs/trackhub.yml"
     shell:
@@ -58,9 +58,9 @@ rule calc_tajima:
     input:
         vcf = expand("results/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
     output:
-        temp("results/{refGenome}/trackhub/{window}.Tajima")
+        temp("results/trackhub/{window}.Tajima")
     log:
-        "logs/{refGenome}/trackhub/tajima/{window}.log"
+        "logs/trackhub/tajima/{window}.log"
     conda:
         "envs/trackhub.yml"
     shell:
@@ -72,9 +72,9 @@ rule calc_snpden:
     input:
         vcf = expand("results/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
     output:
-        temp("results/{refGenome}/trackhub/{window}.SNP-Density")
+        temp("results/trackhub/{window}.SNP-Density")
     log:
-        "logs/{refGenome}/trackhub/SNP-Density/{window}.log"
+        "logs/trackhub/SNP-Density/{window}.log"
     conda:
         "envs/trackhub.yml"
     shell:
@@ -86,9 +86,9 @@ rule calc_pi:
     input:
         vcf = expand("results/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
     output:
-        temp( "results/{refGenome}/trackhub/{window}.Pi")
+        temp( "results/trackhub/{window}.Pi")
     log:
-        "logs/{refGenome}/trackhub/Pi/{window}.log"
+        "logs/trackhub/Pi/{window}.log"
     conda:
         "envs/trackhub.yml"
     shell:
@@ -98,19 +98,19 @@ rule calc_pi:
 
 rule chrom_sizes:
     input:
-        "results/{refGenome}/data/genome/{refGenome}.fasta.fai"
+        "results/data/genome/{refGenome}.fasta.fai"
     output:
-        "results/{refGenome}/trackhub/chrom.sizes"
+        "results/trackhub/chrom.sizes"
     shell:
         "cut -f1,2 {input} > {output}"
 
 rule bcftools_depth:
     input:
         vcf = expand("results/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
-        chrom_sizes = "results/{refGenome}/trackhub/chrom.sizes"
+        chrom_sizes = "results/trackhub/chrom.sizes"
     output:
-        bg = temp("results/{refGenome}/trackhub/depth.bg"),
-        bw = "results/{refGenome}/trackhub/depth.bw"
+        bg = temp("results/trackhub/depth.bg"),
+        bw = "results/trackhub/depth.bw"
         
     conda:
         "envs/trackhub.yml"
@@ -123,10 +123,10 @@ rule bcftools_depth:
 rule vcftools_freq:
     input:
         vcf = expand("results/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
-        chrom_sizes = "results/{refGenome}/trackhub/chrom.sizes"
+        chrom_sizes = "results/trackhub/chrom.sizes"
     output:
-        bg = temp("results/{refGenome}/trackhub/allele_freq.bg"),
-        bw = "results/{refGenome}/trackhub/allele_freq.bw"
+        bg = temp("results/trackhub/allele_freq.bg"),
+        bw = "results/trackhub/allele_freq.bw"
     
     conda:
         "envs/trackhub.yml"

@@ -14,6 +14,7 @@ from collections import defaultdict, deque
 from snakemake.exceptions import WorkflowError
 
 samples = pd.read_table(config["samples"], sep=",", dtype=str).replace(' ', '_', regex=True)
+ref = config["reference"]
 with open(config["resource_config"], "r") as f:
     resources = safe_load(f)
 
@@ -21,23 +22,23 @@ def get_output():
     if config["final_prefix"] == "":
         raise(WorkflowError("'final_prefix' is not set in config."))
     out = []
-    genomes = samples['refGenome'].unique().tolist()
+    samplenames = samples['refGenome'].unique().tolist()
     sample_counts = samples.drop_duplicates(subset = ["BioSample", "refGenome"]).value_counts(subset=['refGenome'])  #get BioSample for each refGenome
     out.extend
-    for ref in genomes:
-        out.extend(expand("results/{prefix}_raw.vcf.gz", refGenome=ref, prefix=config['final_prefix']))
-        out.extend(expand("results/summary_stats/{prefix}_bam_sumstats.txt", refGenome=ref, prefix=config['final_prefix']))
-        #out.extend(expand("results/{prefix}_callable_sites.bed", refGenome=ref, prefix=config['final_prefix']))#Do not want this in current version for anything
-        if sample_counts[ref] > 2:
-            out.append(rules.qc_all.input)
-        if "SampleType" in samples.columns:
-            out.append(rules.postprocess_all.input)
-            if all(i in samples['SampleType'].tolist() for i in ["ingroup", "outgroup"]):
-                out.append(rules.mk_all.input)
-            if config["generate_trackhub"]:
-                if not config["trackhub_email"]:
-                    raise(WorkflowError("If generating trackhub, you must provide an email in the config file."))
-                out.append(rules.trackhub_all.input)
+    #for ref in genomes:
+    out.extend(expand("results/gvcfs/{sample}.g.vcf.gz",  sample=config['final_prefix']))
+    out.extend(expand("results/summary_stats/{prefix}_bam_sumstats.txt", prefix=config['final_prefix']))
+    #out.extend(expand("results/{prefix}_callable_sites.bed", refGenome=ref, prefix=config['final_prefix']))#Do not want this in current version for anything
+
+    #out.append(rules.qc_all.input)
+    #if "SampleType" in samples.columns:
+        #out.append(rules.postprocess_all.input)
+        #if all(i in samples['SampleType'].tolist() for i in ["ingroup", "outgroup"]):
+            #out.append(rules.mk_all.input)
+        #if config["generate_trackhub"]:
+            #if not config["trackhub_email"]:
+                #raise(WorkflowError("If generating trackhub, you must provide an email in the config file."))
+            #out.append(rules.trackhub_all.input)
     return out
 
 def merge_bams_input(wc):
@@ -131,8 +132,8 @@ def get_reads(wc):
             else:
                 raise WorkflowError(f"fq1 and fq2 specified for {wc.sample}, but files were not found.")
         else:
-            r1 = f"results/data/fastq/{wc.refGenome}/{wc.sample}/{wc.run}_1.fastq.gz",
-            r2 = f"results/data/fastq/{wc.refGenome}/{wc.sample}/{wc.run}_2.fastq.gz"
+            r1 = f"results/data/fastq/{wc.sample}/{wc.run}_1.fastq.gz",
+            r2 = f"results/data/fastq/{wc.sample}/{wc.run}_2.fastq.gz"
             return {"r1": r1, "r2": r2}
 
 def get_remote_reads(wildcards):

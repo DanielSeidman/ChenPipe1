@@ -3,6 +3,7 @@
 ##############################
 
 samples: "config/samples.csv" # path to the sample metadata CSV
+reference: "config/reference.fasta" # path to the reference
 resource_config: "config/resources.yaml" # path to resources yaml config
 final_prefix: "" # prefix for final output files
 intervals: True #Set to True if you want to perform variant calling using interval approach.

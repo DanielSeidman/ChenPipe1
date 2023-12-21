@@ -9,14 +9,14 @@ rule all:
     input:
         expand("results/{prefix}_filtered.vcf.gz", refGenome=REFGENOME, prefix=config['final_prefix']),
         expand("results/{prefix}_clean_snps.vcf.gz", refGenome=REFGENOME, prefix=config['final_prefix']),
-        expand("results/{refGenome}/{prefix}_clean_indels.vcf.gz", refGenome=REFGENOME, prefix=config['final_prefix'])
+        expand("results/{prefix}_clean_indels.vcf.gz", refGenome=REFGENOME, prefix=config['final_prefix'])
 
 rule filter_individuals:
     """
     make list of individuals to exclude based on sampleType column
     """
     output:
-        include = "results/{refGenome}/postprocess/{prefix}_samps.txt",
+        include = "results/postprocess/{prefix}_samps.txt",
     run:
         out_df = samples[["BioSample", "SampleType"]]
         out_df.drop_duplicates("BioSample", inplace=True)
@@ -30,11 +30,11 @@ rule basic_filter:
     sites with reference equal to N or alt equal to ., and sites with AF == 0.
     """
     input: 
-        vcf = "results/{refGenome}/{prefix}_raw.vcf.gz",
-        include = "results/{refGenome}/postprocess/{prefix}_samps.txt"
+        vcf = "results/{prefix}_raw.vcf.gz",
+        include = "results/postprocess/{prefix}_samps.txt"
     output:
-        filtered = "results/{refGenome}/{prefix}_filtered.vcf.gz",
-        filtered_idx = "results/{refGenome}/{prefix}_filtered.vcf.gz.csi"
+        filtered = "results/{prefix}_filtered.vcf.gz",
+        filtered_idx = "results/{prefix}_filtered.vcf.gz.csi"
     conda:
         "envs/filter.yml"
     shell:
@@ -49,11 +49,11 @@ rule update_bed:
     Updates callable sites bed file to add contigs less than threshold to regions to exclude
     """
     input:
-        bed = "results/{refGenome}/{prefix}_callable_sites.bed",
-        fai = "results/{refGenome}/data/genome/{refGenome}.fasta.fai"
+        bed = "results/{prefix}_callable_sites.bed",
+        fai = "results/data/genome/{refGenome}.fasta.fai"
     output:
-        bed = "results/{refGenome}/postprocess/{prefix}_exclude_sites.bed",
-        tmp_bed = temp("results/{refGenome}/postprocess/{prefix}_tmp.bed")
+        bed = "results/postprocess/{prefix}_exclude_sites.bed",
+        tmp_bed = temp("results/postprocess/{prefix}_tmp.bed")
     conda:
         "envs/bed.yml"
     params:
@@ -67,12 +67,12 @@ rule update_bed:
 
 rule strict_filter:  
     input: 
-        bed = "results/{refGenome}/postprocess/{prefix}_exclude_sites.bed",
-        vcf = "results/{refGenome}/{prefix}_filtered.vcf.gz",
-        filtered_idx = "results/{refGenome}/{prefix}_filtered.vcf.gz.csi"
+        bed = "results/postprocess/{prefix}_exclude_sites.bed",
+        vcf = "results/{prefix}_filtered.vcf.gz",
+        filtered_idx = "results/{prefix}_filtered.vcf.gz.csi"
     output: 
-        vcf = temp("results/{refGenome}/postprocess/{prefix}_filtered.TEMP.vcf.gz"),
-        idx = temp("results/{refGenome}/postprocess/{prefix}_filtered.TEMP.vcf.gz.csi")
+        vcf = temp("results/postprocess/{prefix}_filtered.TEMP.vcf.gz"),
+        idx = temp("results/postprocess/{prefix}_filtered.TEMP.vcf.gz.csi")
     conda:
         "envs/filter.yml"
     params:
@@ -99,8 +99,8 @@ rule subset_indels:
     Produce a clean vcf with only indels variants.
     """
     input: 
-        vcf = "results/{refGenome}/postprocess/{prefix}_filtered.TEMP.vcf.gz",
-        idx = "results/{refGenome}/postprocess/{prefix}_filtered.TEMP.vcf.gz.csi",
+        vcf = "results/postprocess/{prefix}_filtered.TEMP.vcf.gz",
+        idx = "results/postprocess/{prefix}_filtered.TEMP.vcf.gz.csi",
     output: 
         vcf = "results/{refGenome}/{prefix}_clean_indels.vcf.gz",
         idx = "results/{refGenome}/{prefix}_clean_indels.vcf.gz.tbi"

@@ -54,7 +54,7 @@ rule split_samples:
     """
     output:
         exclude = "results/mk/{prefix}_exclude.txt",
-        outgroups = "results/{refGenome}/mk/{prefix}_ougroups.txt"
+        outgroups = "results/mk/{prefix}_ougroups.txt"
     run:
         out_df = samples[["BioSample", "SampleType"]]
         out_df.drop_duplicates("BioSample", inplace=True)
@@ -68,17 +68,17 @@ rule degenotate:
     Runs degenotate to compute MK tables
     """
     input:
-        vcf = "results/{refGenome}/{prefix}_clean_snps.vcf.gz",
-        genome = "results/{refGenome}/mk/{refGenome}.fasta",
-        gff = "results/{refGenome}/mk/{refGenome}.gff",
-        exclude = "results/{refGenome}/mk/{prefix}_exclude.txt",
-        outgroups = "results/{refGenome}/mk/{prefix}_ougroups.txt"
+        vcf = "results/{prefix}_clean_snps.vcf.gz",
+        genome = "results/mk/{refGenome}.fasta",
+        gff = "results/mk/{refGenome}.gff",
+        exclude = "results/mk/{prefix}_exclude.txt",
+        outgroups = "results/mk/{prefix}_ougroups.txt"
     output:
-        "results/{refGenome}/mk/{prefix}_mk_table.tsv"
+        "results/mk/{prefix}_mk_table.tsv"
     params:
         delim = "space"
     log:
-        "logs/{refGenome}/mk/{prefix}_degenotate.txt"
+        "logs/mk/{prefix}_degenotate.txt"
     conda:
         "envs/mk.yml"
     shell:

@@ -28,8 +28,8 @@ rule sentieon_bam_stats:
         insert_file = "results/summary_stats/{sample}_insert_metrics.txt",
         qd = "results/summary_stats/{sample}_qd_metrics.txt",
         gc = "results/summary_stats/{sample}_gc_metrics.txt",
-        gc_summary = "results/{refGenome}/summary_stats/{sample}_gc_summary.txt",
-        mq = "results/{refGenome}/summary_stats/{sample}_mq_metrics.txt"
+        gc_summary = "results/summary_stats/{sample}_gc_summary.txt",
+        mq = "results/summary_stats/{sample}_mq_metrics.txt"
     conda:
         "../envs/sentieon.yml"
     shell:
@@ -47,7 +47,7 @@ rule collect_fastp_stats:
     input:
         collect_fastp_stats_input
     output:
-        "results/{refGenome}/summary_stats/{sample}_fastp.out"
+        "results/summary_stats/{sample}_fastp.out"
     shell:
         "cat {input} > {output}"
 
@@ -55,7 +55,7 @@ rule collect_sumstats:
     input:
         unpack(get_input_sumstats)
     output:
-        "results/{refGenome}/summary_stats/{prefix}_bam_sumstats.txt"
+        "results/summary_stats/{prefix}_bam_sumstats.txt"
     run:
         if not config['sentieon']:
             FractionReadsPassFilter, NumReadsPassFilter = collectFastpOutput(input.fastpFiles)

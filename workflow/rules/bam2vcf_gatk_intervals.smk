@@ -20,9 +20,9 @@ rule bam2gvcf:
         mem_mb = lambda wildcards, attempt: attempt * resources['bam2gvcf']['mem'],   # this is the overall memory requested
         reduced = lambda wildcards, attempt: attempt * (resources['bam2gvcf']['mem'] - 3000)  # this is the maximum amount given to java
     log:
-        "logs/{refGenome}/gatk_hc/{sample}/{l}.txt"
+        "logs/gatk_hc/{sample}/{l}.txt"
     benchmark:
-        "benchmarks/{refGenome}/gatk_hc/{sample}_{l}.txt"
+        "benchmarks/gatk_hc/{sample}_{l}.txt"
     params:
         minPrun = config['minP'],
         minDang = config['minD'],
@@ -47,9 +47,9 @@ rule concat_gvcfs:
         gvcf = "results/gvcfs/{sample}.g.vcf.gz",
         tbi = "results/gvcfs/{sample}.g.vcf.gz.tbi"
     log:
-        "logs/{refGenome}/concat_gvcfs/{sample}.txt"
+        "logs/concat_gvcfs/{sample}.txt"
     benchmark:
-        "benchmarks/{refGenome}/concat_gvcfs/{sample}.txt"
+        "benchmarks/concat_gvcfs/{sample}.txt"
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['gatherVcfs']['mem'],   # this is the overall memory requested
         tmpdir = get_big_temp
@@ -84,17 +84,17 @@ rule gvcf2DB:
         l = "results/intervals/db_intervals/{l}-scattered.interval_list",
         db_mapfile = "results/genomics_db_import/DB_mapfile.txt"
     output:
-        db = temp(directory("results/{refGenome}/genomics_db_import/DB_L{l}")),
-        tar = temp("results/{refGenome}/genomics_db_import/DB_L{l}.tar"),        
+        db = temp(directory("results/genomics_db_import/DB_L{l}")),
+        tar = temp("results/genomics_db_import/DB_L{l}.tar"),
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['gvcf2DB']['mem'],   # this is the overall memory requested
         reduced = lambda wildcards, attempt: int(attempt * resources['gvcf2DB']['mem'] * 0.80) # this is the maximum amount given to java
     log:
-        "logs/{refGenome}/gatk_db_import/{l}.txt"
+        "logs/gatk_db_import/{l}.txt"
     resources:
         tmpdir = get_big_temp
     benchmark:
-        "benchmarks/{refGenome}/gatk_db_import/{l}.txt"
+        "benchmarks/gatk_db_import/{l}.txt"
     conda:
         "../envs/bam2vcf.yml"
     shell:
@@ -121,13 +121,13 @@ rule DB2vcf:
     are still scattered.
     """
     input:
-        db = "results/{refGenome}/genomics_db_import/DB_L{l}.tar",
-        ref = "results/{refGenome}/data/genome/{refGenome}.fasta",
-        fai = "results/{refGenome}/data/genome/{refGenome}.fasta.fai",
-        dictf = "results/{refGenome}/data/genome/{refGenome}.dict",
+        db = "results/genomics_db_import/DB_L{l}.tar",
+        ref = "results/data/genome/{refGenome}.fasta",
+        fai = "results/data/genome/{refGenome}.fasta.fai",
+        dictf = "results/data/genome/{refGenome}.dict",
     output:
-        vcf = temp("results/{refGenome}/vcfs/intervals/L{l}.vcf.gz"),
-        vcfidx = temp("results/{refGenome}/vcfs/intervals/L{l}.vcf.gz.tbi"),
+        vcf = temp("results/vcfs/intervals/L{l}.vcf.gz"),
+        vcfidx = temp("results/vcfs/intervals/L{l}.vcf.gz.tbi"),
     params:
         het = config['het_prior'],
         db = lambda wc, input: input.db[:-4]
@@ -136,9 +136,9 @@ rule DB2vcf:
         reduced = lambda wildcards, attempt: attempt * (resources['DB2vcf']['mem'] - 3000),  # this is the maximum amount given to java
         tmpdir = get_big_temp
     log:
-        "logs/{refGenome}/gatk_genotype_gvcfs/{l}.txt"
+        "logs/gatk_genotype_gvcfs/{l}.txt"
     benchmark:
-        "benchmarks/{refGenome}/gatk_genotype_gvcfs/{l}.txt"
+        "benchmarks/gatk_genotype_gvcfs/{l}.txt"
     conda:
         "../envs/bam2vcf.yml"
     shell:
@@ -159,22 +159,22 @@ rule filterVcfs:
     This rule filters all of the VCFs
     """
     input:
-        vcf = "results/{refGenome}/vcfs/intervals/L{l}.vcf.gz",
-        vcfidx = "results/{refGenome}/vcfs/intervals/L{l}.vcf.gz.tbi",
-        ref = "results/{refGenome}/data/genome/{refGenome}.fasta",
-        fai = "results/{refGenome}/data/genome/{refGenome}.fasta.fai",
-        dictf = "results/{refGenome}/data/genome/{refGenome}.dict",
+        vcf = "results/vcfs/intervals/L{l}.vcf.gz",
+        vcfidx = "results/vcfs/intervals/L{l}.vcf.gz.tbi",
+        ref = "results/data/genome/{refGenome}.fasta",
+        fai = "results/data/genome/{refGenome}.fasta.fai",
+        dictf = "results/data/genome/{refGenome}.dict",
     output:
-        vcf = temp("results/{refGenome}/vcfs/intervals/filtered_L{l}.vcf.gz"),
-        vcfidx = temp("results/{refGenome}/vcfs/intervals/filtered_L{l}.vcf.gz.tbi")
+        vcf = temp("results/vcfs/intervals/filtered_L{l}.vcf.gz"),
+        vcfidx = temp("results/vcfs/intervals/filtered_L{l}.vcf.gz.tbi")
     conda:
         "../envs/bam2vcf.yml"
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['filterVcfs']['mem']   # this is the overall memory requested
     log:
-        "logs/{refGenome}/gatk_filter/{l}.txt"
+        "logs/gatk_filter/{l}.txt"
     benchmark:
-        "benchmarks/{refGenome}/gatk_filter/{l}.txt"
+        "benchmarks/gatk_filter/{l}.txt"
     shell:
         "gatk VariantFiltration "
         "-R {input.ref} "
@@ -196,8 +196,8 @@ rule sort_gatherVcfs:
         vcfs = get_interval_vcfs,
         tbis = get_interval_vcfs_idx
     output:
-        vcfFinal = "results/{refGenome}/{prefix}_raw.vcf.gz",
-        vcfFinalidx = "results/{refGenome}/{prefix}_raw.vcf.gz.tbi"
+        vcfFinal = "results/{prefix}_raw.vcf.gz",
+        vcfFinalidx = "results/{prefix}_raw.vcf.gz.tbi"
     conda:
         "../envs/bcftools.yml"
     log:

@@ -20,9 +20,9 @@ rule bam2gvcf:
         mem_mb = lambda wildcards, attempt: attempt * resources['bam2gvcf']['mem'],   # this is the overall memory requested
         reduced = lambda wildcards, attempt: attempt * (resources['bam2gvcf']['mem'] - 3000)  # this is the maximum amount given to java
     log:
-        "logs/{refGenome}/gatk_hc/{sample}.txt"
+        "logs/gatk_hc/{sample}.txt"
     benchmark:
-        "benchmarks/{refGenome}/gatk_hc/{sample}.txt"
+        "benchmarks/gatk_hc/{sample}.txt"
     params:
         minPrun = config['minP'],
         minDang = config['minD'],
@@ -76,14 +76,14 @@ rule gvcf2DB:
         intervals = "results/genomics_db_import/db_intervals.list"
     output:
         db = temp(directory("results/genomics_db_import/DB")),
-        tar = temp("results/{refGenome}/genomics_db_import/DB.tar"),        
+        tar = temp("results/genomics_db_import/DB.tar"),
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['gvcf2DB']['mem'],   # this is the overall memory requested
         reduced = lambda wildcards, attempt: int(attempt * resources['gvcf2DB']['mem'] * 0.80) # this is the maximum amount given to java
     log:
-        "logs/{refGenome}/gatk_db_import.txt"
+        "logs/gatk_db_import.txt"
     benchmark:
-        "benchmarks/{refGenome}/gatk_db_import.txt"
+        "benchmarks/gatk_db_import.txt"
     conda:
         "../envs/bam2vcf.yml"
     shell:
@@ -110,11 +110,11 @@ rule DB2vcf:
     are still scattered.
     """
     input:
-        db = "results/{refGenome}/genomics_db_import/DB.tar",
-        ref = "results/{refGenome}/data/genome/{refGenome}.fasta",
+        db = "results/genomics_db_import/DB.tar",
+        ref = "results/data/genome/{refGenome}.fasta",
     output:
-        vcf = temp("results/{refGenome}/vcfs/raw.vcf.gz"),
-        vcfidx = temp("results/{refGenome}/vcfs/raw.vcf.gz.tbi"),
+        vcf = temp("results/vcfs/raw.vcf.gz"),
+        vcfidx = temp("results/vcfs/raw.vcf.gz.tbi"),
     params:
         het = config['het_prior'],
         db = lambda wc, input: input.db[:-4]
@@ -122,9 +122,9 @@ rule DB2vcf:
         mem_mb = lambda wildcards, attempt: attempt * resources['DB2vcf']['mem'],   # this is the overall memory requested
         reduced = lambda wildcards, attempt: attempt * (resources['DB2vcf']['mem'] - 3000)  # this is the maximum amount given to java
     log:
-        "logs/{refGenome}/gatk_genotype_gvcfs.txt"
+        "logs/gatk_genotype_gvcfs.txt"
     benchmark:
-        "benchmarks/{refGenome}/gatk_genotype_gvcfs.txt"
+        "benchmarks/gatk_genotype_gvcfs.txt"
     conda:
         "../envs/bam2vcf.yml"
     shell:
@@ -145,20 +145,20 @@ rule filterVcfs:
     This rule filters all of the VCFs
     """
     input:
-        vcf = "results/{refGenome}/vcfs/raw.vcf.gz",
-        vcfidx = "results/{refGenome}/vcfs/raw.vcf.gz.tbi",
-        ref = "results/{refGenome}/data/genome/{refGenome}.fasta"
+        vcf = "results/vcfs/raw.vcf.gz",
+        vcfidx = "results/vcfs/raw.vcf.gz.tbi",
+        ref = "results/data/genome/{refGenome}.fasta"
     output:
-        vcf = temp("results/{refGenome}/vcfs/filtered.vcf.gz"),
-        vcfidx = temp("results/{refGenome}/vcfs/filtered.vcf.gz.tbi")
+        vcf = temp("results/vcfs/filtered.vcf.gz"),
+        vcfidx = temp("results/vcfs/filtered.vcf.gz.tbi")
     conda:
         "../envs/bam2vcf.yml"
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['filterVcfs']['mem']   # this is the overall memory requested
     log:
-        "logs/{refGenome}/gatk_filter.txt"
+        "logs/gatk_filter.txt"
     benchmark:
-        "benchmarks/{refGenome}/gatk_filter.txt"
+        "benchmarks/gatk_filter.txt"
     shell:
         "gatk VariantFiltration "
         "-R {input.ref} "
@@ -177,17 +177,17 @@ rule filterVcfs:
 
 rule sort_gatherVcfs:
     input:
-        vcf = "results/{refGenome}/vcfs/filtered.vcf.gz",
-        vcfidx = "results/{refGenome}/vcfs/filtered.vcf.gz.tbi"
+        vcf = "results/vcfs/filtered.vcf.gz",
+        vcfidx = "results/vcfs/filtered.vcf.gz.tbi"
     output:
-        vcfFinal = "results/{refGenome}/{prefix}_raw.vcf.gz",
-        vcfFinalidx = "results/{refGenome}/{prefix}_raw.vcf.gz.tbi"
+        vcfFinal = "results/{prefix}_raw.vcf.gz",
+        vcfFinalidx = "results/{prefix}_raw.vcf.gz.tbi"
     conda:
         "../envs/bcftools.yml"
     log:
-        "logs/{refGenome}/sort_gather_vcfs/{prefix}_log.txt"
+        "logs/sort_gather_vcfs/{prefix}_log.txt"
     benchmark:
-        "benchmarks/{refGenome}/sort_gather_vcfs/{prefix}_benchmark.txt"
+        "benchmarks/sort_gather_vcfs/{prefix}_benchmark.txt"
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['gatherVcfs']['mem'],   # this is the overall memory requested
         reduced = lambda wildcards, attempt: attempt * (resources['gatherVcfs']['mem'] - 2000)  # this is the maximum amount given to java

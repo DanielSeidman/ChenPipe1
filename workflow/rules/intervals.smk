@@ -10,9 +10,9 @@ rule picard_intervals:
     conda:
         '../envs/bam2vcf.yml'
     log:
-        "logs/{refGenome}/picard_intervals/log.txt"
+        "logs/picard_intervals/log.txt"
     benchmark:
-        "benchmarks/{refGenome}/picard_intervals/benchmark.txt"
+        "benchmarks/picard_intervals/benchmark.txt"
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['process_ref']['mem']
     shell:
@@ -45,9 +45,9 @@ checkpoint create_db_intervals:
     params:
         max_intervals = get_db_interval_count
     log:
-        "logs/{refGenome}/db_intervals/log.txt"
+        "logs/db_intervals/log.txt"
     benchmark:
-        "benchmarks/{refGenome}/db_intervals/benchmark.txt"
+        "benchmarks/db_intervals/benchmark.txt"
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['create_db_intervals']['mem']
     conda:
@@ -63,19 +63,19 @@ checkpoint create_db_intervals:
 
 checkpoint create_gvcf_intervals:
     input:
-        ref = "results/{refGenome}/data/genome/{refGenome}.fasta",
-        fai = "results/{refGenome}/data/genome/{refGenome}.fasta.fai",
-        dictf = "results/{refGenome}/data/genome/{refGenome}.dict",
-        intervals = "results/{refGenome}/intervals/master_interval_list.list"
+        ref = "results/data/genome/{refGenome}.fasta",
+        fai = "results/data/genome/{refGenome}.fasta.fai",
+        dictf = "results/data/genome/{refGenome}.dict",
+        intervals = "results/intervals/master_interval_list.list"
     output:
-        fof = "results/{refGenome}/intervals/gvcf_intervals/intervals.txt",
-        out_dir = directory("results/{refGenome}/intervals/gvcf_intervals"),
+        fof = "results/intervals/gvcf_intervals/intervals.txt",
+        out_dir = directory("results/intervals/gvcf_intervals"),
     params:
         max_intervals = config["num_gvcf_intervals"]
     log:
-        "logs/{refGenome}/gvcf_intervals/log.txt"
+        "logs/gvcf_intervals/log.txt"
     benchmark:
-        "benchmarks/{refGenome}/gvcf_intervals/benchmark.txt"
+        "benchmarks/gvcf_intervals/benchmark.txt"
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['create_gvcf_intervals']['mem']
     conda:
