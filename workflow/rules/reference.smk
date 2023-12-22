@@ -10,9 +10,9 @@ rule index_reference:
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['index_ref']['mem']
     log:
-        "logs/index_ref/log.txt"
+        "logs/{ref_name}/index_ref/log.txt"
     benchmark:
-        "benchmarks/index_ref/benchmark.txt"
+        "benchmarks/{ref_name}/index_ref/benchmark.txt"
     shell:
         """
         bwa index {input.ref} 2> {log}
