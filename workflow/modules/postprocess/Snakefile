@@ -53,12 +53,11 @@ rule update_bed:
         fai = "results/{ref_name}/data/genome/{ref_name}.fasta.fai"
     output:
         bed = "results/{ref_name}/postprocess/{prefix}_exclude_sites.bed",
-        tmp_bed = temp("results/postprocess/{prefix}_tmp.bed")
+        tmp_bed = temp("results/{ref_name}/postprocess/{prefix}_tmp.bed")
     conda:
         "envs/bed.yml"
     params:
         size_filter = config["contig_size"],
-        
     shell:
         """
         awk 'BEGIN{{OFS="\\t"}}{{if ($2<{params.size_filter}) {{print $1,0,$2}}}}' {input.fai} > {output.tmp_bed}
