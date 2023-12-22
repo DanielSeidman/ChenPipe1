@@ -11,14 +11,11 @@ rule trim_galore_call:
         resources['trim_galore_call']['threads']
     resources:
         mem_mb = lambda wildcards,attempt: attempt * resources['trim_galore_call']['mem']
-
     shell:
         "trim_galore --paired {input.r1} {input.r2} -o {run}_trimgalore/ "
 
 
 rule bwa_map:
-
-
     input:
         r1 = "results/{ref_name}/filtered_fastqs/{sample}/{run}_trimgalore/{run}_1.fastq.gz",
         r2 = "results/{ref_name}/filtered_fastqs/{sample}/{run}_trimgalore/{run}_2.fastq.gz",
