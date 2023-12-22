@@ -1,10 +1,10 @@
 rule trim_galore_call:
     input:
-        r1="results/{ref_name}/{ref_name}filtered_fastqs/{sample}/{run}_1.fastq.gz",
-        r2="results/{ref_name}/{ref_name}filtered_fastqs/{sample}/{run}_2.fastq.gz",
+        r1="results/{ref_name}/filtered_fastqs/{sample}/{run}_1.fastq.gz",
+        r2="results/{ref_name}/filtered_fastqs/{sample}/{run}_2.fastq.gz",
     output:
-        r1trim="results/{ref_name}/{ref_name}filtered_fastqs/{sample}/{run}_trimgalore/{run}_1.fastq.gz",
-        r2trim="results/{ref_name}/{ref_name}filtered_fastqs/{sample}/{run}_trimgalore/{run}_2.fastq.gz",
+        r1trim="results/{ref_name}/filtered_fastqs/{sample}/{run}_trimgalore/{run}_1.fastq.gz",
+        r2trim="results/{ref_name}/filtered_fastqs/{sample}/{run}_trimgalore/{run}_2.fastq.gz",
     conda:
         "../envs/fastq2bam.yml"
     threads:
@@ -44,14 +44,14 @@ rule merge_bams:
     input:
         merge_bams_input
     output:
-        bam = temp("results/{ref_name}/{ref_name}bams/postMerge/{sample}.bam"),
-        bai = temp("results/{ref_name}/{ref_name}bams/postMerge/{sample}.bam.bai")
+        bam = temp("results/{ref_name}/bams/postMerge/{sample}.bam"),
+        bai = temp("results/{ref_name}/bams/postMerge/{sample}.bam.bai")
     conda:
         "../envs/fastq2bam.yml"
     log:
-        "logs/merge_bams/{sample}.txt"
+        "logs/{ref_name}/merge_bams/{sample}.txt"
     benchmark:
-        "benchmarks/merge_bams/{sample}.txt"
+        "benchmarks/{ref_name}/merge_bams/{sample}.txt"
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['merge_bams']['mem']
     shell:
@@ -61,7 +61,7 @@ rule dedup:
     input:
         unpack(dedup_input)
     output:
-        dedupBam = "results/{ref_name}/{ref_name}bams/{sample}_final.bam",
+        dedupBam = "results/{ref_name}/bams/{sample}_final.bam",
         dedupBai = "results/{ref_name}/bams/{sample}_final.bam.bai",
     conda:
         "../envs/sambamba.yml"
