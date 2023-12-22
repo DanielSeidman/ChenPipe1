@@ -6,28 +6,28 @@ wildcard_constraints:
     window="\d+"
 
 samples = pd.read_table(config["samples"], sep=",", dtype=str).replace(' ', '_', regex=True)
-REFGENOME = samples['refGenome'].unique().tolist()
+
 WINDOWS = [1000, 10000, 100000]
 FILE_TYPES = ["Tajima", "SNP-Density", "Pi"] # dont change this unless you add rules to generate more stats.
 
 rule all:
     input:
-        trackhub_file = expand("results/trackhub/hub.txt", refGenome=REFGENOME),
-        trackhub_html = expand("results/trackhub/index.html", refGenome=REFGENOME),
+        trackhub_file = expand("results/{ref_name}/trackhub/hub.txt", ref_name=config['ref_name']),
+        trackhub_html = expand("results/{ref_name}/trackhub/index.html", ref_name=config['ref_name']),
 
 rule write_hub_files:
     input:
-        window_stat_files = expand("results/trackhub/{file_type}_{window}.bw", file_type=FILE_TYPES, window=WINDOWS),
-        vcf = expand("results/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
-        callable_sites = "results/trackhub/non_callable_sites.bb",
-        allele_freq = "results/trackhub/allele_freq.bw",
-        depth = "results/trackhub/depth.bw",
+        window_stat_files = expand("results/{{ref_name}}/trackhub/{file_type}_{window}.bw", file_type=FILE_TYPES, window=WINDOWS),
+        vcf = expand("results/{{ref_name}}/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
+        callable_sites = "results/{ref_name}/trackhub/non_callable_sites.bb",
+        allele_freq = "results/{ref_name}/trackhub/allele_freq.bw",
+        depth = "results/{ref_name}/trackhub/depth.bw",
         
     output:
-        trackhub_file = "results/trackhub/hub.txt",
-        html = "results/trackhub/index.html"
+        trackhub_file = "results/{ref_name}/trackhub/hub.txt",
+        html = "results/{ref_name}/trackhub/index.html"
     params:
-        refGenome = "{ref_name}",
+        refGenome = config['ref_name'],
         file_types = FILE_TYPES,
         windows = WINDOWS,
         email = config["trackhub_email"]
