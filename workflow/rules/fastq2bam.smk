@@ -1,7 +1,6 @@
 rule trim_galore_call:
     input:
-        r1="results/{ref_name}/filtered_fastqs/{sample}/{run}_1.fastq.gz",
-        r2="results/{ref_name}/filtered_fastqs/{sample}/{run}_2.fastq.gz",
+        unpack(get_reads)
     output:
         r1trim="results/{ref_name}/trimgalore_fastqs/{sample}/{run}_1.fastq.gz",
         r2trim="results/{ref_name}/trimgalore_fastqs/{sample}/{run}_2.fastq.gz",
