@@ -56,7 +56,7 @@ rule strip_vcf:
 
 rule calc_tajima:
     input:
-        vcf = expand("results/{ref_name}/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
+        vcf = expand("results/{{ref_name}}/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
     output:
         temp("results/{ref_name}/trackhub/{window}.Tajima")
     log:
