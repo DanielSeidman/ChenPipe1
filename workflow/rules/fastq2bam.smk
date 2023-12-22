@@ -10,6 +10,8 @@ rule trim_galore_call:
         resources['trim_galore_call']['threads']
     resources:
         mem_mb = lambda wildcards,attempt: attempt * resources['trim_galore_call']['mem']
+    log:
+        "logs/{ref_name}/trim_galore/{sample}/{run}.txt"
     shell:
         "trim_galore --paired {input.r1} {input.r2} -o {wildcards.run}_trimgalore/ "
 
