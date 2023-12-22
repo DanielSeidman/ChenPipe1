@@ -8,7 +8,7 @@ rule bam2gvcf:
         bam = "results/{ref_name}/bams/{sample}_final.bam",
         bai = "results/{ref_name}/bams/{sample}_final.bam.bai",
         ref = "config/{ref_name}.fasta",
-        indexes = expand("config/{ref_name}.fasta.{ext}",ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
+        indexes = expand("config/{{ref_name}}.fasta.{ext}",ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
         dictf="config/{ref_name}.dict",
     output:
         gvcf = "results/{ref_name}/gvcfs/{sample}.g.vcf.gz",
