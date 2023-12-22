@@ -120,8 +120,8 @@ def get_reads(wc):
             else:
                 raise WorkflowError(f"fq1 and fq2 specified for {wc.sample}, but files were not found.")
         else:
-            r1 = f"results/{config['ref_names']}/data/fastq/{wc.sample}/{wc.run}_1.fastq.gz",
-            r2 = f"results/{config['ref_names']}/data/fastq/{wc.sample}/{wc.run}_2.fastq.gz"
+            r1 = f"results/{config['ref_name']}/data/fastq/{wc.sample}/{wc.run}_1.fastq.gz",
+            r2 = f"results/{config['ref_name']}/data/fastq/{wc.sample}/{wc.run}_2.fastq.gz"
             return {"r1": r1, "r2": r2}
 
 def get_remote_reads(wildcards):
