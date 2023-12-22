@@ -40,8 +40,8 @@ checkpoint create_db_intervals:
         dictf = "config/{ref_name}.dict",
         intervals = "results/intervals/master_interval_list.list"
     output:
-        fof = "results/intervals/db_intervals/intervals.txt",
-        out_dir = directory("results/intervals/db_intervals"),
+        fof = "results/{ref_name}/intervals/db_intervals/intervals.txt",
+        out_dir = directory("results/{ref_name}/intervals/db_intervals"),
     params:
         max_intervals = get_db_interval_count
     log:
@@ -66,10 +66,10 @@ checkpoint create_gvcf_intervals:
         ref = "config/{ref_name}.fasta",
         fai = "config/{ref_name}.fasta.fai",
         dictf = "config/{ref_name}.dict",
-        intervals = "results/intervals/master_interval_list.list"
+        intervals = "results/{ref_name}/intervals/master_interval_list.list"
     output:
-        fof = "results/intervals/gvcf_intervals/intervals.txt",
-        out_dir = directory("results/intervals/gvcf_intervals"),
+        fof = "results/{ref_name}/intervals/gvcf_intervals/intervals.txt",
+        out_dir = directory("results/{ref_name}/intervals/gvcf_intervals"),
     params:
         max_intervals = config["num_gvcf_intervals"]
     log:

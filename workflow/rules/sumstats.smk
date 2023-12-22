@@ -25,11 +25,11 @@ rule sentieon_bam_stats:
     params:
         lic = config['sentieon_lic']
     output:
-        insert_file = "results/summary_stats/{sample}_insert_metrics.txt",
-        qd = "results/summary_stats/{sample}_qd_metrics.txt",
-        gc = "results/summary_stats/{sample}_gc_metrics.txt",
-        gc_summary = "results/summary_stats/{sample}_gc_summary.txt",
-        mq = "results/summary_stats/{sample}_mq_metrics.txt"
+        insert_file = "results/{ref_name}/summary_stats/{sample}_insert_metrics.txt",
+        qd = "results/{ref_name}/summary_stats/{sample}_qd_metrics.txt",
+        gc = "results/{ref_name}/summary_stats/{sample}_gc_metrics.txt",
+        gc_summary = "results/{ref_name}/summary_stats/{sample}_gc_summary.txt",
+        mq = "results/{ref_name}/summary_stats/{sample}_mq_metrics.txt"
     conda:
         "../envs/sentieon.yml"
     shell:
@@ -47,7 +47,7 @@ rule collect_fastp_stats:
     input:
         collect_fastp_stats_input
     output:
-        "results/summary_stats/{sample}_fastp.out"
+        "results/{ref_name}/summary_stats/{sample}_fastp.out"
     shell:
         "cat {input} > {output}"
 
@@ -55,7 +55,7 @@ rule collect_sumstats:
     input:
         unpack(get_input_sumstats)
     output:
-        "results/summary_stats/{prefix}_bam_sumstats.txt"
+        "results/{ref_name}/summary_stats/{prefix}_bam_sumstats.txt"
     run:
         if not config['sentieon']:
             FractionReadsPassFilter, NumReadsPassFilter = collectFastpOutput(input.fastpFiles)

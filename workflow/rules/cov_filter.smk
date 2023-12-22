@@ -52,11 +52,11 @@ rule collect_covstats:
 rule create_cov_bed:
     input:
         stats = "results/{ref_name}/summary_stats/all_cov_sumstats.txt",
-        d4 = "results/callable_sites/all_samples.d4"
+        d4 = "results/{ref_name}callable_sites/all_samples.d4"
     output:
-        covbed = "results/callable_sites/{prefix}_callable_sites_cov.bed"
+        covbed = "results/{ref_name}/callable_sites/{prefix}_callable_sites_cov.bed"
     benchmark:
-        "benchmarks/covbed/{prefix}_benchmark.txt"
+        "benchmarks/{ref_name}/covbed/{prefix}_benchmark.txt"
     params:
         cov_threshold_stdev = config["cov_threshold_stdev"],
         cov_threshold_lower = config["cov_threshold_lower"],
@@ -69,15 +69,15 @@ rule create_cov_bed:
 
 rule callable_bed:
     input:
-        cov = "results/callable_sites/{prefix}_callable_sites_cov.bed",
-        map = "results/callable_sites/{prefix}_callable_sites_map.bed"
+        cov = "results/{ref_name}/callable_sites/{prefix}_callable_sites_cov.bed",
+        map = "results/{ref_name}/callable_sites/{prefix}_callable_sites_map.bed"
     output:
-        callable_sites = "results/{prefix}_callable_sites.bed",
-        tmp_cov = temp("results/callable_sites/{prefix}_temp_cov.bed")
+        callable_sites = "results/{ref_name}/{prefix}_callable_sites.bed",
+        tmp_cov = temp("results/{ref_name}/callable_sites/{prefix}_temp_cov.bed")
     conda:
         "../envs/cov_filter.yml"
     benchmark:
-        "benchmarks/callable_bed/{prefix}_benchmark.txt"
+        "benchmarks/{ref_name}/callable_bed/{prefix}_benchmark.txt"
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['callable_bed']['mem']
     params:

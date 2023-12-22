@@ -3,20 +3,20 @@ import os
 configfile: "config/config.yaml"
 
 samples = pd.read_table(config["samples"], sep=",", dtype=str).replace(' ', '_', regex=True)
-REFGENOME = samples['refGenome'].unique().tolist()
+
 
 rule all:
     input:
-        expand("results/{prefix}_filtered.vcf.gz", refGenome=REFGENOME, prefix=config['final_prefix']),
-        expand("results/{prefix}_clean_snps.vcf.gz", refGenome=REFGENOME, prefix=config['final_prefix']),
-        expand("results/{prefix}_clean_indels.vcf.gz", refGenome=REFGENOME, prefix=config['final_prefix'])
+        expand("results/{ref_name}/{prefix}_filtered.vcf.gz", ref_name=config['ref_name'], prefix=config['final_prefix']),
+        expand("results/{ref_name}/{prefix}_clean_snps.vcf.gz", ref_name=config['ref_name'], prefix=config['final_prefix']),
+        expand("results/{ref_name}/{prefix}_clean_indels.vcf.gz", ref_name=config['ref_name'], prefix=config['final_prefix'])
 
 rule filter_individuals:
     """
     make list of individuals to exclude based on sampleType column
     """
     output:
-        include = "results/postprocess/{prefix}_samps.txt",
+        include = "results/{ref_name}/postprocess/{prefix}_samps.txt",
     run:
         out_df = samples[["BioSample", "SampleType"]]
         out_df.drop_duplicates("BioSample", inplace=True)
@@ -30,11 +30,11 @@ rule basic_filter:
     sites with reference equal to N or alt equal to ., and sites with AF == 0.
     """
     input: 
-        vcf = "results/{prefix}_raw.vcf.gz",
-        include = "results/postprocess/{prefix}_samps.txt"
+        vcf = "results/{ref_name}/{prefix}_raw.vcf.gz",
+        include = "results/{ref_name}/postprocess/{prefix}_samps.txt"
     output:
-        filtered = "results/{prefix}_filtered.vcf.gz",
-        filtered_idx = "results/{prefix}_filtered.vcf.gz.csi"
+        filtered = "results/{ref_name}/{prefix}_filtered.vcf.gz",
+        filtered_idx = "results/{ref_name}/{prefix}_filtered.vcf.gz.csi"
     conda:
         "envs/filter.yml"
     shell:
@@ -49,10 +49,10 @@ rule update_bed:
     Updates callable sites bed file to add contigs less than threshold to regions to exclude
     """
     input:
-        bed = "results/{prefix}_callable_sites.bed",
-        fai = "results/data/genome/{ref_name}.fasta.fai"
+        bed = "results/{ref_name}/{prefix}_callable_sites.bed",
+        fai = "results/{ref_name}/data/genome/{ref_name}.fasta.fai"
     output:
-        bed = "results/postprocess/{prefix}_exclude_sites.bed",
+        bed = "results/{ref_name}/postprocess/{prefix}_exclude_sites.bed",
         tmp_bed = temp("results/postprocess/{prefix}_tmp.bed")
     conda:
         "envs/bed.yml"

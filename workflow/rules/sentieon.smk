@@ -32,7 +32,7 @@ rule merge_bams:
         merge_bams_input
     output:
         bam = temp("results/{ref_name}/bams/postMerge/{sample}.bam"),
-        bai = temp("results/bams/postMerge/{sample}.bam.bai")
+        bai = temp("results/{ref_name}/bams/postMerge/{sample}.bam.bai")
     conda:
         "../envs/fastq2bam.yml"
     log:
@@ -48,10 +48,10 @@ rule sentieon_dedup:
     input:
         unpack(dedup_input),
     output:
-        dedupBam = "results/bams/{sample}_final.bam",
-        dedupBai = "results/bams/{sample}_final.bam.bai",
-        score = temp("results/summary_stats/{sample}/sentieon_dedup_score.txt"),
-        metrics = temp("results/summary_stats/{sample}/sentieon_dedup_metrics.txt")
+        dedupBam = "results/{ref_name}/bams/{sample}_final.bam",
+        dedupBai = "results/{ref_name}/bams/{sample}_final.bam.bai",
+        score = temp("results/{ref_name}/summary_stats/{sample}/sentieon_dedup_score.txt"),
+        metrics = temp("results/{ref_name}/summary_stats/{sample}/sentieon_dedup_metrics.txt")
     params:
         lic = config['sentieon_lic']
     conda:
