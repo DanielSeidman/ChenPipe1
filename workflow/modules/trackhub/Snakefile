@@ -70,7 +70,7 @@ rule calc_tajima:
 
 rule calc_snpden:
     input:
-        vcf = expand("results/{ref_name}/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
+        vcf = expand("results/{{ref_name}}/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
     output:
         temp("results/{ref_name}/trackhub/{window}.SNP-Density")
     log:
@@ -84,7 +84,7 @@ rule calc_snpden:
 
 rule calc_pi:
     input:
-        vcf = expand("results/{ref_name}/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
+        vcf = expand("results/{{ref_name}}/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
     output:
         temp( "results/{ref_name}/trackhub/{window}.Pi")
     log:
@@ -106,7 +106,7 @@ rule chrom_sizes:
 
 rule bcftools_depth:
     input:
-        vcf = expand("results/{ref_name}/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
+        vcf = expand("results/{{ref_name}}/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
         chrom_sizes = "results/{ref_name}/trackhub/chrom.sizes"
     output:
         bg = temp("results/{ref_name}/trackhub/depth.bg"),
@@ -122,7 +122,7 @@ rule bcftools_depth:
 
 rule vcftools_freq:
     input:
-        vcf = expand("results/{ref_name}/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
+        vcf = expand("results/{{ref_name}}/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
         chrom_sizes = "results/{ref_name}/trackhub/chrom.sizes"
     output:
         bg = temp("results/{ref_name}/trackhub/allele_freq.bg"),
@@ -161,7 +161,7 @@ rule non_callable_sites:
     Calculates complement of callable sites to make 'non-callable sites' this makes visualzing on browser easier.
     """
     input:
-        callable_sites = expand("results/{ref_name}/{prefix}_callable_sites.bed", prefix=config['final_prefix']),
+        callable_sites = expand("results/{{ref_name}}/{prefix}_callable_sites.bed", prefix=config['final_prefix']),
         chrom_sizes = "results/{ref_name}/trackhub/chrom.sizes",
         
     output:
