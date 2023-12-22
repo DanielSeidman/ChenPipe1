@@ -5,19 +5,19 @@ include: "common.smk"
 configfile: "config/config.yaml"
 
 samples = pd.read_table(config["samples"], sep=",", dtype=str).replace(' ', '_', regex=True)
-REFGENOME = samples['refGenome'].unique().tolist()
+
 
 rule all:
     input:
-        expand("results/{ref_name}/QC/{prefix}_qc.html", refGenome=REFGENOME, prefix=config['final_prefix'])
+        expand("results/{ref_name}/QC/{prefix}_qc.html", ref_name=config['ref_name'], prefix=config['final_prefix'])
 
 rule check_fai:
     """
     checks fai file for numeric first column, then do not run plink and rest of workflow if they are all numeric
     """
     input:
-        vcf = "results/{prefix}_raw.vcf.gz",
-        fai = "results/data/genome/{ref_name}.fasta.fai",
+        vcf = "results/{ref_name}/{prefix}_raw.vcf.gz",
+        fai = "results/{ref_name}/data/genome/{ref_name}.fasta.fai",
     output:
         faiResult = "results/QC/{prefix}_fai_tmp.txt"
     run:
@@ -25,13 +25,13 @@ rule check_fai:
 
 rule vcftools_individuals:
     input:
-        vcf = "results/{prefix}_raw.vcf.gz"
+        vcf = "results/{ref_name}/{prefix}_raw.vcf.gz"
     output:
-        depth = "results/QC/{prefix}.idepth",
-        miss = "results/QC/{prefix}.imiss",
-        samps = "results/QC/{prefix}.samps.txt",
-        summ = "results/QC/{prefix}.FILTER.summary",
-        het = "results/QC/{prefix}.het"
+        depth = "results/{ref_name}/QC/{prefix}.idepth",
+        miss = "results/{ref_name}/QC/{prefix}.imiss",
+        samps = "results/{ref_name}/QC/{prefix}.samps.txt",
+        summ = "results/{ref_name}/QC/{prefix}.FILTER.summary",
+        het = "results/{ref_name}/QC/{prefix}.het"
     conda:
         "envs/vcftools_individuals.yml"
     params:
@@ -48,17 +48,17 @@ rule vcftools_individuals:
 
 rule subsample_snps:
     input:
-        vcf = "results/{prefix}_raw.vcf.gz",
-        samps = "results/QC/{prefix}.samps.txt",
-        fai = "results/data/genome/{ref_name}.fasta.fai",
-        sumstats = "results/summary_stats/{prefix}_bam_sumstats.txt"
+        vcf = "results/{ref_name}/{prefix}_raw.vcf.gz",
+        samps = "results/{ref_name}/QC/{prefix}.samps.txt",
+        fai = "results/{ref_name}/data/genome/{ref_name}.fasta.fai",
+        sumstats = "results/{ref_name}/summary_stats/{prefix}_bam_sumstats.txt"
     output:
-        filtered = temp("results/QC/{prefix}_filtered.vcf.gz"),
-        filtered_idx = temp("results/QC/{prefix}_filtered.vcf.gz.csi"),
-        pruned = "results/QC/{prefix}.pruned.vcf.gz",
-        snpqc = "results/QC/{prefix}_snpqc.txt",
-        fai = "results/QC/{prefix}.fasta.fai",
-        sumstats = "results/QC/{prefix}_bam_sumstats.txt"
+        filtered = temp("results/{ref_name}/QC/{prefix}_filtered.vcf.gz"),
+        filtered_idx = temp("results/{ref_name}/QC/{prefix}_filtered.vcf.gz.csi"),
+        pruned = "results/{ref_name}/QC/{prefix}.pruned.vcf.gz",
+        snpqc = "results/{ref_name}/QC/{prefix}_snpqc.txt",
+        fai = "results/{ref_name}/QC/{prefix}.fasta.fai",
+        sumstats = "results/{ref_name}/QC/{prefix}_bam_sumstats.txt"
     conda:
         "envs/subsample_snps.yml"
     params:
@@ -99,18 +99,18 @@ rule plink:
     Call plink PCA.
     """
     input:
-        vcf = "results/QC/{prefix}.pruned.vcf.gz",
-        faiResult = "results/QC/{prefix}_fai_tmp.txt"
+        vcf = "results/{ref_name}/QC/{prefix}.pruned.vcf.gz",
+        faiResult = "results/{ref_name}/QC/{prefix}_fai_tmp.txt"
     params:
         prefix = lambda wc, input: input.vcf.replace(".pruned.vcf.gz", "")
     output: 
-        bed = "results/QC/{prefix}.bed",
-        bim = "results/QC/{prefix}.bim",
-        fam = "results/QC/{prefix}.fam",
-        eigenvec = "results/QC/{prefix}.eigenvec",
-        eigenval = "results/QC/{prefix}.eigenval",
-        dist = "results/QC/{prefix}.dist",
-        distid = "results/QC/{prefix}.dist.id",
+        bed = "results/{ref_name}/QC/{prefix}.bed",
+        bim = "results/{ref_name}/QC/{prefix}.bim",
+        fam = "results/{ref_name}/QC/{prefix}.fam",
+        eigenvec = "results/{ref_name}/QC/{prefix}.eigenvec",
+        eigenval = "results/{ref_name}/QC/{prefix}.eigenval",
+        dist = "results/{ref_name}/QC/{prefix}.dist",
+        distid = "results/{ref_name}/QC/{prefix}.dist.id",
         king = "results/{ref_name}/QC/{prefix}.king"
     conda:
         "envs/plink.yml"
