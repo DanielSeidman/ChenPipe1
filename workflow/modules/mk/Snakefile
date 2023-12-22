@@ -4,11 +4,11 @@ include: "common.smk"
 configfile: "config/config.yaml"
 
 samples = pd.read_table(config["samples"], sep=",", dtype=str).replace(' ', '_', regex=True)
-REFGENOME = samples['refGenome'].unique().tolist()
+
 
 rule all:
     input:
-        expand("results/{ref_name}/mk/{prefix}_mk_table.tsv", refGenome=REFGENOME, prefix=config['final_prefix'])
+        expand("results/{ref_name}/mk/{prefix}_mk_table.tsv", ref_name=config['ref_name'], prefix=config['final_prefix'])
 
 
 
@@ -17,8 +17,8 @@ rule split_samples:
     Splits sample sheet to make ingroup and outgroup files
     """
     output:
-        exclude = "results/mk/{prefix}_exclude.txt",
-        outgroups = "results/mk/{prefix}_ougroups.txt"
+        exclude = "results/{ref_name}/mk/{prefix}_exclude.txt",
+        outgroups = "results/{ref_name}/mk/{prefix}_ougroups.txt"
     run:
         out_df = samples[["BioSample", "SampleType"]]
         out_df.drop_duplicates("BioSample", inplace=True)
