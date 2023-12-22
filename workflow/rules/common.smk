@@ -93,11 +93,11 @@ def dedup_input(wc):
     runs = samples.loc[samples['BioSample'] == wc.sample]['Run'].tolist()
     
     if len(runs) == 1:
-        bam = expand("results/{ref_name}/bams/preMerge/{{sample}}/{run}.bam", run=runs)
-        bai = expand("results/{ref_name}/bams/preMerge/{{sample}}/{run}.bam.bai", run=runs)
+        bam = expand("results/{{ref_name}}/bams/preMerge/{{sample}}/{run}.bam", run=runs)
+        bai = expand("results/{{ref_name}}/bams/preMerge/{{sample}}/{run}.bam.bai", run=runs)
     else:
         bam = "results/{ref_name}/bams/postMerge/{sample}.bam"
-        bai = "results/bams/postMerge/{sample}.bam.bai"
+        bai = "results/{ref_name}/bams/postMerge/{sample}.bam.bai"
     return {"bam": bam, "bai": bai}
 
 def sentieon_combine_gvcf_input(wc):
