@@ -114,12 +114,10 @@ rule DB2vcf:
         ref = "config/{ref_name}.fasta"
     output:
         vcf = temp("results/{ref_name}/vcfs/raw.vcf.gz"),
-        vcfidx = temp("results/vcfs/raw.vcf.gz.tbi"),
+        vcfidx = temp("results/{ref_name}/vcfs/raw.vcf.gz.tbi"),
     params:
         het = config['het_prior'],
         db = lambda wc, input: input.db[:-4],
-
-
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['DB2vcf']['mem'],   # this is the overall memory requested
         reduced = lambda wildcards, attempt: attempt * (resources['DB2vcf']['mem'] - 3000)  # this is the maximum amount given to java
