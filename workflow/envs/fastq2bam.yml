@@ -4,7 +4,6 @@ channels:
   - defaults
 dependencies:
   - trim-galore
-  - cutadapt
   - samtools==1.14
   - fastp==0.20.1
   - bwa==0.7.17
