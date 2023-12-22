@@ -4,9 +4,7 @@ rule bam2gvcf:
     """
     TODO
     """
-
     input:
-
         bam = "results/{ref_name}/bams/{sample}_final.bam",
         bai = "results/{ref_name}/bams/{sample}_final.bam.bai",
         ref = "config/{ref_name}.fasta",
@@ -18,7 +16,6 @@ rule bam2gvcf:
     resources:
         #!The -Xmx value the tool is run with should be less than the total amount of physical memory available by at least a few GB
         # subtract that memory here
-
         mem_mb = lambda wildcards, attempt: attempt * resources['bam2gvcf']['mem'],   # this is the overall memory requested
         reduced = lambda wildcards, attempt: attempt * (resources['bam2gvcf']['mem'] - 3000)  # this is the maximum amount given to java
     log:
