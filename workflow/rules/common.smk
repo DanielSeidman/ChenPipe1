@@ -113,8 +113,10 @@ def get_reads(wc):
         if os.path.exists(row.fq1.item()) and os.path.exists(row.fq2.item()):
             r1 = f"results/{config['ref_name']}/data/fastq/{wc.sample}/{wc.run}_1.fastq.gz"
             r2 = f"results/{config['ref_name']}/data/fastq/{wc.sample}/{wc.run}_2.fastq.gz"
-            os.symlink(row.fq1.item(),r1)
-            os.symlink(row.fq2.item(),r2)
+            if(not os.path.exists(r1)):
+                os.symlink(row.fq1.item(),r1)
+            if (not os.path.exists(r2)):
+                os.symlink(row.fq2.item(),r2)
             return {"r1": r1, "r2": r2}
         else:
             raise WorkflowError(f"fq1 and fq2 specified for {wc.sample}, but files were not found.")
