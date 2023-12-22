@@ -1,11 +1,11 @@
 rule compute_d4:
     input:
-        bam = "results/bams/{sample}_final.bam",
-        bai = "results/bams/{sample}_final.bam.bai",
+        bam = "results/{ref_name}/bams/{sample}_final.bam",
+        bai = "results/{ref_name}/bams/{sample}_final.bam.bai",
     output:
-        "results/callable_sites/{sample}.mosdepth.global.dist.txt",
-        temp("results/callable_sites/{sample}.per-base.d4"),
-        summary="results/callable_sites/{sample}.mosdepth.summary.txt"
+        "results/{ref_name}/callable_sites/{sample}.mosdepth.global.dist.txt",
+        temp("results/{ref_name}/callable_sites/{sample}.per-base.d4"),
+        summary="results/{ref_name}/callable_sites/{sample}.mosdepth.summary.txt"
     conda:
         "../envs/cov_filter.yml"
     log:
@@ -17,7 +17,7 @@ rule compute_d4:
     threads:
         resources['compute_d4']['threads']
     params:
-        prefix = os.path.join(workflow.default_remote_prefix, "results/callable_sites/{sample}")
+        prefix = os.path.join(workflow.default_remote_prefix, "results/{ref_name}/callable_sites/{sample}")
     shell:
         "mosdepth --d4 -t {threads} {params.prefix} {input.bam} &> {log}"
 
@@ -25,7 +25,7 @@ rule merge_d4:
     input:
         unpack(get_input_for_coverage)
     output:
-        "results/callable_sites/all_samples.d4"
+        "results/{ref_name}/callable_sites/all_samples.d4"
     conda:
         "../envs/cov_filter.yml"
     log:
@@ -41,7 +41,7 @@ rule collect_covstats:
     input:
         unpack(get_input_covstats)
     output:
-        "results/summary_stats/all_cov_sumstats.txt"
+        "results/{ref_name}/summary_stats/all_cov_sumstats.txt"
     run:
         covStats = collectCovStats(input.covStatFiles)
         with open(output[0], "w") as f:
@@ -51,7 +51,7 @@ rule collect_covstats:
 
 rule create_cov_bed:
     input:
-        stats = "results/summary_stats/all_cov_sumstats.txt",
+        stats = "results/{ref_name}/summary_stats/all_cov_sumstats.txt",
         d4 = "results/callable_sites/all_samples.d4"
     output:
         covbed = "results/callable_sites/{prefix}_callable_sites_cov.bed"

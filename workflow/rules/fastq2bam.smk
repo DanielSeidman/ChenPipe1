@@ -1,10 +1,10 @@
 rule trim_galore_call:
     input:
-        r1="results/filtered_fastqs/{sample}/{run}_1.fastq.gz",
-        r2="results/filtered_fastqs/{sample}/{run}_2.fastq.gz",
+        r1="results/{ref_name}/{ref_name}filtered_fastqs/{sample}/{run}_1.fastq.gz",
+        r2="results/{ref_name}/{ref_name}filtered_fastqs/{sample}/{run}_2.fastq.gz",
     output:
-        r1trim="results/filtered_fastqs/{sample}/{run}_trimgalore/{run}_1.fastq.gz",
-        r2trim="results/filtered_fastqs/{sample}/{run}_trimgalore/{run}_2.fastq.gz",
+        r1trim="results/{ref_name}/{ref_name}filtered_fastqs/{sample}/{run}_trimgalore/{run}_1.fastq.gz",
+        r2trim="results/{ref_name}/{ref_name}filtered_fastqs/{sample}/{run}_trimgalore/{run}_2.fastq.gz",
     conda:
         "../envs/fastq2bam.yml"
     threads:
@@ -17,17 +17,19 @@ rule trim_galore_call:
 
 
 rule bwa_map:
+
+
+    input:
+        r1 = "results/{ref_name}/filtered_fastqs/{sample}/{run}_trimgalore/{run}_1.fastq.gz",
+        r2 = "results/{ref_name}/filtered_fastqs/{sample}/{run}_trimgalore/{run}_2.fastq.gz",
+        ref = "config/{ref_name}.fasta",
+        indexes=expand("config/{{ref_name}}.fasta.{ext}",ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
+        dictf="config/{ref_name}.dict",
+    output: 
+        bam = temp("results/{ref_name}/bams/preMerge/{sample}/{run}.bam"),
+        bai = temp("results/{ref_name}/bams/preMerge/{sample}/{run}.bam.bai"),
     params:
         rg=get_read_group,
-        ref=config['reference']
-    input:
-        r1 = "results/filtered_fastqs/{sample}/{run}_trimgalore/{run}_1.fastq.gz",
-        r2 = "results/filtered_fastqs/{sample}/{run}_trimgalore/{run}_2.fastq.gz",
-        indexes = expand("{params.ref}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
-    output: 
-        bam = temp("results/bams/preMerge/{sample}/{run}.bam"),
-        bai = temp("results/bams/preMerge/{sample}/{run}.bam.bai"),
-
     conda:
         "../envs/fastq2bam.yml"
     threads:
@@ -45,8 +47,8 @@ rule merge_bams:
     input:
         merge_bams_input
     output:
-        bam = temp("results/bams/postMerge/{sample}.bam"),
-        bai = temp("results/bams/postMerge/{sample}.bam.bai")
+        bam = temp("results/{ref_name}/{ref_name}bams/postMerge/{sample}.bam"),
+        bai = temp("results/{ref_name}/{ref_name}bams/postMerge/{sample}.bam.bai")
     conda:
         "../envs/fastq2bam.yml"
     log:
@@ -62,8 +64,8 @@ rule dedup:
     input:
         unpack(dedup_input)
     output:
-        dedupBam = "results/bams/{sample}_final.bam",
-        dedupBai = "results/bams/{sample}_final.bam.bai",
+        dedupBam = "results/{ref_name}/{ref_name}bams/{sample}_final.bam",
+        dedupBai = "results/{ref_name}/bams/{sample}_final.bam.bai",
     conda:
         "../envs/sambamba.yml"
     resources:

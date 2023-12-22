@@ -1,12 +1,12 @@
 rule genmap:
     input:
-        ref = "results/data/genome/{refGenome}.fasta",
+        ref = "config/{ref_name}.fasta",
     output:
-        bg = temp("results/genmap/{refGenome}.genmap.bedgraph"),
-        sorted_bg = "results/genmap/sorted_mappability.bg"
+        bg = temp("results/{ref_name}/genmap/{ref_name}.genmap.bedgraph"),
+        sorted_bg = "results/{ref_name}/genmap/sorted_mappability.bg"
     params:
-        indir = os.path.join(workflow.default_remote_prefix, "results/genmap_index"),
-        outdir = os.path.join(workflow.default_remote_prefix, "results/genmap"),
+        indir = os.path.join(workflow.default_remote_prefix, "results/{ref_name}/genmap_index"),
+        outdir = os.path.join(workflow.default_remote_prefix, "results/{ref_name}/genmap"),
         kmer = config['mappability_k']
     log:
         "logs/genmap/log.txt"
@@ -28,9 +28,9 @@ rule genmap:
 
 rule mappability_bed:
     input:
-        map = "results/genmap/sorted_mappability.bg"
+        map = "results/{ref_name}/genmap/sorted_mappability.bg"
     output:
-        callable_sites = "results/callable_sites/{prefix}_callable_sites_map.bed" if config['cov_filter'] else "results/{prefix}_callable_sites.bed",
+        callable_sites = "results/{ref_name}/callable_sites/{prefix}_callable_sites_map.bed" if config['cov_filter'] else "results/{ref_name}/{prefix}_callable_sites.bed",
         tmp_map = temp("results/callable_sites/{prefix}_temp_map.bed")
     conda:
         "../envs/mappability.yml"

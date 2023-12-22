@@ -27,7 +27,7 @@ rule write_hub_files:
         trackhub_file = "results/trackhub/hub.txt",
         html = "results/trackhub/index.html"
     params:
-        refGenome = "{refGenome}",
+        refGenome = "{ref_name}",
         file_types = FILE_TYPES,
         windows = WINDOWS,
         email = config["trackhub_email"]
@@ -98,7 +98,7 @@ rule calc_pi:
 
 rule chrom_sizes:
     input:
-        "results/data/genome/{refGenome}.fasta.fai"
+        "results/data/genome/{ref_name}.fasta.fai"
     output:
         "results/trackhub/chrom.sizes"
     shell:
@@ -138,19 +138,19 @@ rule vcftools_freq:
         
 rule convert_to_bedgraph:
     input:
-        stat_file = "results/{refGenome}/trackhub/{window}.{file_type}",
-        chrom_sizes = "results/{refGenome}/trackhub/chrom.sizes"
+        stat_file = "results/{ref_name}/trackhub/{window}.{file_type}",
+        chrom_sizes = "results/{ref_name}/trackhub/chrom.sizes"
     output:
-        temp("results/{refGenome}/trackhub/{file_type}_{window}.bg")
+        temp("results/{ref_name}/trackhub/{file_type}_{window}.bg")
     script:
         "scripts/vcftools_out_to_bg.py"
 
 rule bedgraph_to_bigwig:
     input:
-        bg = "results/{refGenome}/trackhub/{file_type}_{window}.bg",
-        chrom_sizes = "results/{refGenome}/trackhub/chrom.sizes"
+        bg = "results/{ref_name}/trackhub/{file_type}_{window}.bg",
+        chrom_sizes = "results/{ref_name}/trackhub/chrom.sizes"
     output:
-        "results/{refGenome}/trackhub/{file_type}_{window}.bw"
+        "results/{ref_name}/trackhub/{file_type}_{window}.bw"
     conda:
         "envs/trackhub.yml"
     shell:
@@ -162,11 +162,11 @@ rule non_callable_sites:
     """
     input:
         callable_sites = expand("results/{prefix}_callable_sites.bed", prefix=config['final_prefix']),
-        chrom_sizes = "results/{refGenome}/trackhub/chrom.sizes",
+        chrom_sizes = "results/{ref_name}/trackhub/chrom.sizes",
         
     output:
-        bed = temp("results/{refGenome}/trackhub/non_callable_sites.bed"),
-        bb = "results/{refGenome}/trackhub/non_callable_sites.bb"
+        bed = temp("results/{ref_name}/trackhub/non_callable_sites.bed"),
+        bb = "results/{ref_name}/trackhub/non_callable_sites.bb"
     conda:
         "envs/trackhub.yml"
     shell:

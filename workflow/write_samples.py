@@ -27,16 +27,16 @@ def copy_reference(ref: Path) -> str:
     for ext in exts:
         if ext in ref.name:
             ref_name = ref.name.split(ext)[0]
-    if Path('..', 'data', 'genome', ref_name + ".fna").exists():
+    if Path('..', 'data', 'genome', ref_name + ".fasta").exists():
         return ref_name
     if not Path("../data/genome").exists():
         Path("../data/genome").mkdir(parents=True)
     if ref.suffix == ".gz":
         with gzip.open(ref, 'rb') as f_in:
-            with open(Path('..', 'data', 'genome', ref_name + ".fna"), 'wb') as f_out:
+            with open(Path('..', 'data', 'genome', ref_name + ".fasta"), 'wb') as f_out:
                 shutil.copyfileobj(f_in, f_out)
     else:
-        shutil.copyfile(ref, Path('data', 'genome', ref_name + ".fna"))
+        shutil.copyfile(ref, Path('data', 'genome', ref_name + ".fasta"))
     return ref_name
 
 def write_sample_sheet(sample_dict: dict, ref_name: str, ref_path: str, ncbi_ref: bool) -> None:
@@ -79,7 +79,7 @@ def main() -> None:
         ncbi_ref = False
         if args.copyref:
             ref_name = copy_reference(ref)
-            ref_path = "../data/genome/" + ref_name + ".fna"
+            ref_path = "../data/genome/" + ref_name + ".fasta"
         else:
             ref_name = ref.stem
             ref_path = args.ref

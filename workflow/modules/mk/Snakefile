@@ -8,45 +8,9 @@ REFGENOME = samples['refGenome'].unique().tolist()
 
 rule all:
     input:
-        expand("results/mk/{prefix}_mk_table.tsv", refGenome=REFGENOME, prefix=config['final_prefix'])
+        expand("results/{ref_name}/mk/{prefix}_mk_table.tsv", refGenome=REFGENOME, prefix=config['final_prefix'])
 
-rule prep_genome:
-    """
-    Gets the needed information (fasta and gff) from NCBI
-    """
-    input: 
-        ref = get_ref,
-        gff = get_gff
-    output:
-        ref = "results/mk/{refGenome}.fasta",
-        gff = "results/mk/{refGenome}.gff"
-    params:
-        dataset = "results/mk/{refGenome}_dataset.zip",
-        outdir = "results/mk/{refGenome}"
-    conda:
-        "envs/ncbi.yml"
-    shell:
-        """
-        set +e
-        #if genome is local, datasets will fail, we will just continue
-        mkdir -p {params.outdir}
-        datasets download genome accession  --exclude-protein --exclude-rna --filename {params.dataset} {wildcards.refGenome} \
-        && 7z x {params.dataset} -aoa -o{params.outdir}
 
-        if [ -z "{input.ref}" ]
-        then
-            cat {params.outdir}/ncbi_dataset/data/{wildcards.refGenome}/*.fna > {output.ref}
-        else
-            cp {input.ref} {output.ref}
-        fi
-
-       if [ -z "{input.gff}" ]
-        then
-            cp {params.outdir}/ncbi_dataset/data/{wildcards.refGenome}/genomic.gff {output.gff}
-        else
-            cp {input.gff} {output.gff}
-        fi
-        """
 
 rule split_samples:
     """
@@ -69,8 +33,8 @@ rule degenotate:
     """
     input:
         vcf = "results/{prefix}_clean_snps.vcf.gz",
-        genome = "results/mk/{refGenome}.fasta",
-        gff = "results/mk/{refGenome}.gff",
+        genome = "results/mk/{ref_name}.fasta",
+        gff = "results/mk/{ref_name}.gff",
         exclude = "results/mk/{prefix}_exclude.txt",
         outgroups = "results/mk/{prefix}_ougroups.txt"
     output:

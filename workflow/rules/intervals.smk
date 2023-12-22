@@ -1,10 +1,10 @@
 rule picard_intervals:
     input:
-        ref = "results/data/genome/{refGenome}.fasta",
-        fai = "results/data/genome/{refGenome}.fasta.fai",
-        dictf = "results/data/genome/{refGenome}.dict"
+        ref = "config/{ref_name}.fasta",
+        fai = "config/{ref_name}.fasta.fai",
+        dictf = "config/{ref_name}.dict"
     output:
-        intervals = temp("results/intervals/picard_interval_list.list")
+        intervals = temp("results/{ref_name}/intervals/picard_interval_list.list")
     params:
         minNmer = int(config['minNmer'])
     conda:
@@ -20,9 +20,9 @@ rule picard_intervals:
 
 rule format_interval_list:
     input:
-        intervals = "results/intervals/picard_interval_list.list"
+        intervals = "results/{ref_name}/intervals/picard_interval_list.list"
     output:
-        intervals = "results/intervals/master_interval_list.list"
+        intervals = "results/{ref_name}/intervals/master_interval_list.list"
     run:
         with open(output.intervals, "w") as out:
             with open(input.intervals, "r") as inp:
@@ -35,9 +35,9 @@ rule format_interval_list:
 
 checkpoint create_db_intervals:
     input:
-        ref = "results/data/genome/{refGenome}.fasta",
-        fai = "results/data/genome/{refGenome}.fasta.fai",
-        dictf = "results/data/genome/{refGenome}.dict",
+        ref = "config/{ref_name}.fasta",
+        fai = "config/{ref_name}.fasta.fai",
+        dictf = "config/{ref_name}.dict",
         intervals = "results/intervals/master_interval_list.list"
     output:
         fof = "results/intervals/db_intervals/intervals.txt",
@@ -63,9 +63,9 @@ checkpoint create_db_intervals:
 
 checkpoint create_gvcf_intervals:
     input:
-        ref = "results/data/genome/{refGenome}.fasta",
-        fai = "results/data/genome/{refGenome}.fasta.fai",
-        dictf = "results/data/genome/{refGenome}.dict",
+        ref = "config/{ref_name}.fasta",
+        fai = "config/{ref_name}.fasta.fai",
+        dictf = "config/{ref_name}.dict",
         intervals = "results/intervals/master_interval_list.list"
     output:
         fof = "results/intervals/gvcf_intervals/intervals.txt",

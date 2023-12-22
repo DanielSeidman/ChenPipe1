@@ -1,11 +1,11 @@
 rule bam_sumstats:
     input:
-        bam = "results/bams/{sample}_final.bam",
-        bai = "results/bams/{sample}_final.bam.bai",
-        ref = "results/data/genome/{refGenome}.fasta",
+        bam = "results/{ref_name}/bams/{sample}_final.bam",
+        bai = "results/{ref_name}/bams/{sample}_final.bam.bai",
+        ref = "config/{ref_name}.fasta",
     output:
-        cov = "results/summary_stats/{sample}_coverage.txt",
-        alnSum = "results/summary_stats/{sample}_AlnSumMets.txt",
+        cov = "results/{ref_name}/summary_stats/{sample}_coverage.txt",
+        alnSum = "results/{ref_name}/summary_stats/{sample}_AlnSumMets.txt",
     conda:
         "../envs/fastq2bam.yml"
     resources:
@@ -18,10 +18,10 @@ rule bam_sumstats:
 
 rule sentieon_bam_stats:
     input:
-        bam = "results/bams/{sample}_final.bam",
-        bai = "results/bams/{sample}_final.bam.bai",
-        indexes = expand("results/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
-        ref = "results/data/genome/{refGenome}.fasta"
+        bam = "results/{ref_name}/bams/{sample}_final.bam",
+        bai = "results/{ref_name}/bams/{sample}_final.bam.bai",
+        indexes = expand("config/{{ref_name}}.fasta.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
+        ref = "config/{ref_name}.fasta"
     params:
         lic = config['sentieon_lic']
     output:

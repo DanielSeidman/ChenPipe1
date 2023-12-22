@@ -14,7 +14,7 @@ from collections import defaultdict, deque
 from snakemake.exceptions import WorkflowError
 
 samples = pd.read_table(config["samples"], sep=",", dtype=str).replace(' ', '_', regex=True)
-ref = config["reference"]
+ref = "config/{ref_name}.fasta"
 with open(config["resource_config"], "r") as f:
     resources = safe_load(f)
 
@@ -22,13 +22,12 @@ def get_output():
     if config["final_prefix"] == "":
         raise(WorkflowError("'final_prefix' is not set in config."))
     out = []
-    samplenames = samples['refGenome'].unique().tolist()
-    sample_counts = samples.drop_duplicates(subset = ["BioSample", "refGenome"]).value_counts(subset=['refGenome'])  #get BioSample for each refGenome
-    out.extend
+    sample_names = samples['BioSample'].unique().tolist()
+
     #for ref in genomes:
-    out.extend(expand("results/gvcfs/{sample}.g.vcf.gz",  sample=config['final_prefix']))
-    out.extend(expand("results/summary_stats/{prefix}_bam_sumstats.txt", prefix=config['final_prefix']))
-    #out.extend(expand("results/{prefix}_callable_sites.bed", refGenome=ref, prefix=config['final_prefix']))#Do not want this in current version for anything
+    out.extend(expand("results/{ref_name}/gvcfs/{sample}.g.vcf.gz", sample=sample_names))
+    #out.extend(expand("results/{ref_name}/summary_stats/{prefix}_bam_sumstats.txt", prefix=config['final_prefix']))
+    #out.extend(expand("results/{ref_name}/{prefix}_callable_sites.bed", refGenome=ref, prefix=config['final_prefix']))#Do not want this in current version for anything
 
     #out.append(rules.qc_all.input)
     #if "SampleType" in samples.columns:
@@ -42,7 +41,7 @@ def get_output():
     return out
 
 def merge_bams_input(wc):
-    return expand("results/bams/preMerge/{{sample}}/{run}.bam", run=samples.loc[samples['BioSample'] == wc.sample]['Run'].tolist())
+    return expand("results/{ref_name}/bams/preMerge/{{sample}}/{run}.bam", run=samples.loc[samples['BioSample'] == wc.sample]['Run'].tolist())
 
 def get_ref(wildcards):
     if 'refPath' in samples.columns:
@@ -67,7 +66,7 @@ def get_interval_gvcfs(wc):
         lines = [l.strip() for l in f.readlines()]
     list_files = [os.path.basename(x) for x in lines]
     list_numbers = [f.replace("-scattered.interval_list", "") for f in list_files]
-    gvcfs = expand("results/interval_gvcfs/{{sample}}/{l}.raw.g.vcf.gz", l=list_numbers)
+    gvcfs = expand("results/{ref_name}/interval_gvcfs/{{sample}}/{l}.raw.g.vcf.gz", l=list_numbers)
     
     return gvcfs
 
@@ -87,7 +86,7 @@ def get_interval_vcfs(wc):
     list_files = [os.path.basename(x) for x in lines]
     
     list_numbers = [f.replace("-scattered.interval_list", "") for f in list_files]
-    vcfs = expand("results/vcfs/intervals/filtered_L{l}.vcf.gz", l=list_numbers)
+    vcfs = expand("results/{ref_name}/vcfs/intervals/filtered_L{l}.vcf.gz", l=list_numbers)
     
     return vcfs
 
@@ -97,18 +96,18 @@ def get_interval_vcfs_idx(wc):
     
 def get_gvcfs_db(wc):
     _samples = samples.loc[(samples['refGenome'] == wc.refGenome)]['BioSample'].unique().tolist()
-    gvcfs = expand("results/gvcfs/{sample}.g.vcf.gz", sample=_samples)
-    tbis = expand("results/gvcfs/{sample}.g.vcf.gz.tbi", sample=_samples)
+    gvcfs = expand("results/{ref_name}/gvcfs/{sample}.g.vcf.gz", sample=_samples)
+    tbis = expand("results/{ref_name}/gvcfs/{sample}.g.vcf.gz.tbi", sample=_samples)
     return {"gvcfs": gvcfs, "tbis": tbis}
 
 def dedup_input(wc):
     runs = samples.loc[samples['BioSample'] == wc.sample]['Run'].tolist()
     
     if len(runs) == 1:
-        bam = expand("results/bams/preMerge/{{sample}}/{run}.bam", run=runs)
-        bai = expand("results/bams/preMerge/{{sample}}/{run}.bam.bai", run=runs)
+        bam = expand("results/{ref_name}/bams/preMerge/{{sample}}/{run}.bam", run=runs)
+        bai = expand("results/{ref_name}/bams/preMerge/{{sample}}/{run}.bam.bai", run=runs)
     else:
-        bam = "results/bams/postMerge/{sample}.bam"
+        bam = "results/{ref_name}/bams/postMerge/{sample}.bam"
         bai = "results/bams/postMerge/{sample}.bam.bai"
     return {"bam": bam, "bai": bai}
 
@@ -204,7 +203,7 @@ def get_input_covstats(wildcards):
 def get_bedgraphs(wildcards):
     """Snakemake seems to struggle with unpack() and default_remote_prefix. So we have to do this one by one."""
     _samples = samples.loc[(samples['Organism'] == wildcards.Organism) & (samples['refGenome'] == wildcards.refGenome)]['BioSample'].unique().tolist()
-    bedgraphFiles = expand(config['output'] + "{{Organism}}/{{refGenome}}/" + config['bamDir'] + "preMerge/{sample}" + ".sorted.bg", sample=_samples)
+    bedgraphFiles = expand(config['output'] + "{{Organism}}/{{ref_name}}/" + config['bamDir'] + "preMerge/{sample}" + ".sorted.bg", sample=_samples)
     return bedgraphFiles
 
 def get_big_temp(wildcards):

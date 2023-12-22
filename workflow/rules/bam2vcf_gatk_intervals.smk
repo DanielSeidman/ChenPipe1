@@ -5,10 +5,7 @@ rule bam2gvcf:
     TODO
     """
     input:
-
-        indexes = expand("results/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
-        dictf = "results/data/genome/{refGenome}.dict",
-        bam = "results/bams/{sample}_final.bam",
+        bam = "results/{ref_name}/bams/{sample}_final.bam",
         bai = "results/bams/{sample}_final.bam.bai",
         l = "results/intervals/gvcf_intervals/{l}-scattered.interval_list"
     output:
@@ -24,7 +21,9 @@ rule bam2gvcf:
     benchmark:
         "benchmarks/gatk_hc/{sample}_{l}.txt"
     params:
-        ref = config["reference"],
+        ref = "config/{ref_name}.fasta",
+        indexes= expand("{ref}.fasta.{ext}",ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
+        dictf="{ref}.dict",
         minPrun = config['minP'],
         minDang = config['minD'],
         ploidy = config['ploidy'],
@@ -123,15 +122,17 @@ rule DB2vcf:
     """
     input:
         db = "results/genomics_db_import/DB_L{l}.tar",
-        ref = "{config["reference"]}.fasta",
-        fai = "{ref}.fasta.fai",
-        dictf = "{ref}.dict",
+        ref =  "config/{ref_name}.fasta",
+        dictf="config/{ref_name}.dict",
+        fai="config/{ref_name}.fasta.fai",
     output:
         vcf = temp("results/vcfs/intervals/L{l}.vcf.gz"),
         vcfidx = temp("results/vcfs/intervals/L{l}.vcf.gz.tbi"),
     params:
         het = config['het_prior'],
-        db = lambda wc, input: input.db[:-4]
+        db = lambda wc, input: input.db[:-4],
+
+
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['DB2vcf']['mem'],   # this is the overall memory requested
         reduced = lambda wildcards, attempt: attempt * (resources['DB2vcf']['mem'] - 3000),  # this is the maximum amount given to java
@@ -162,9 +163,9 @@ rule filterVcfs:
     input:
         vcf = "results/vcfs/intervals/L{l}.vcf.gz",
         vcfidx = "results/vcfs/intervals/L{l}.vcf.gz.tbi",
-        ref = config["reference"],
-        fai = "{ref}.fasta.fai",
-        dictf = "{ref}.dict",
+        ref = "config/{ref_name}.fasta",
+        fai = "{{ref}}.fasta.fai",
+        dictf = "{{ref}}.dict",
     output:
         vcf = temp("results/vcfs/intervals/filtered_L{l}.vcf.gz"),
         vcfidx = temp("results/vcfs/intervals/filtered_L{l}.vcf.gz.tbi")
@@ -202,9 +203,9 @@ rule sort_gatherVcfs:
     conda:
         "../envs/bcftools.yml"
     log:
-        "logs/{refGenome}/sort_gather_vcfs/{prefix}_log.txt"
+        "logs/{ref_name}/sort_gather_vcfs/{prefix}_log.txt"
     benchmark:
-        "benchmarks/{refGenome}/sort_gather_vcfs/{prefix}_benchmark.txt"
+        "benchmarks/{ref_name}/sort_gather_vcfs/{prefix}_benchmark.txt"
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['gatherVcfs']['mem'],   # this is the overall memory requested
         tmpdir = get_big_temp

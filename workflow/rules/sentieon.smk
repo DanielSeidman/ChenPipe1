@@ -1,12 +1,12 @@
 rule sentieon_map:
     input:
-        ref = "results/data/genome/{refGenome}.fasta",
-        r1 = "results/filtered_fastqs/{sample}/{run}_1.fastq.gz",
-        r2 = "results/filtered_fastqs/{sample}/{run}_2.fastq.gz",
-        indexes = expand("results/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"])
+        ref = "config/{ref_name}.fasta",
+        r1 = "results/{ref_name}/filtered_fastqs/{sample}/{run}_1.fastq.gz",
+        r2 = "results/{ref_name}/filtered_fastqs/{sample}/{run}_2.fastq.gz",
+        indexes = expand("results/{ref_name}/data/genome/{{ref_name}}.fasta.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"])
     output: 
-        bam = temp("results/bams/preMerge/{sample}/{run}.bam"),
-        bai = temp("results/bams/preMerge/{sample}/{run}.bam.bai"),
+        bam = temp("results/{ref_name}/bams/preMerge/{sample}/{run}.bam"),
+        bai = temp("results/{ref_name}/bams/preMerge/{sample}/{run}.bam.bai"),
     params:
         rg = get_read_group,
         lic = config['sentieon_lic']
@@ -31,7 +31,7 @@ rule merge_bams:
     input:
         merge_bams_input
     output:
-        bam = temp("results/bams/postMerge/{sample}.bam"),
+        bam = temp("results/{ref_name}/bams/postMerge/{sample}.bam"),
         bai = temp("results/bams/postMerge/{sample}.bam.bai")
     conda:
         "../envs/fastq2bam.yml"
@@ -74,9 +74,9 @@ rule sentieon_dedup:
 
 rule sentieon_haplotyper:
     input:
-        ref = "results/data/genome/{refGenome}.fasta",
-        indexes = expand("results/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
-        dictf = "results/data/genome/{refGenome}.dict",
+        ref = "results/data/genome/{ref_name}.fasta",
+        indexes = expand("results/data/genome/{{ref_name}}.fasta.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
+        dictf = "results/data/genome/{ref_name}.dict",
         bam = "results/bams/{sample}_final.bam",
         bai = "results/bams/{sample}_final.bam.bai"
     params:
@@ -104,12 +104,12 @@ rule sentieon_haplotyper:
 rule sentieon_combine_gvcf:
     input:
         unpack(sentieon_combine_gvcf_input),
-        ref = "results/data/genome/{refGenome}.fasta",
-        indexes = expand("results/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
-        dictf = "results/data/genome/{refGenome}.dict"
+        ref = "results/data/genome/{ref_name}.fasta",
+        indexes = expand("results/data/genome/{{ref_name}}.fasta.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
+        dictf = "results/data/genome/{ref_name}.dict"
     output:
         vcf = temp("results/vcfs/raw.vcf.gz"),
-        tbi = temp("results/{refGenome}/vcfs/raw.vcf.gz.tbi")
+        tbi = temp("results/{ref_name}/vcfs/raw.vcf.gz.tbi")
     params:
         glist = lambda wc, input: " ".join(["-v " + gvcf for gvcf in input['gvcfs']]),
         lic = config['sentieon_lic']
@@ -121,9 +121,9 @@ rule sentieon_combine_gvcf:
     conda:
         "../envs/sentieon.yml"
     log:
-        "logs/{refGenome}/sentieon_combine_gvcf/log.txt"
+        "logs/{ref_name}/sentieon_combine_gvcf/log.txt"
     benchmark:
-        "benchmarks/{refGenome}/sentieon_combine_gvcf/benchmark.txt"
+        "benchmarks/{ref_name}/sentieon_combine_gvcf/benchmark.txt"
     shell:
         """
         export SENTIEON_LICENSE={params.lic}
@@ -135,22 +135,22 @@ rule filter_vcf:
     This rule applies filters to the raw vcf.
     """
     input:
-        vcf = "results/{refGenome}/vcfs/raw.vcf.gz",
-        tbi = "results/{refGenome}/vcfs/raw.vcf.gz.tbi",
-        ref = "results/{refGenome}/data/genome/{refGenome}.fasta",
-        indexes = expand("results/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
-        dictf = "results/{refGenome}/data/genome/{refGenome}.dict"
+        vcf = "results/{ref_name}/vcfs/raw.vcf.gz",
+        tbi = "results/{ref_name}/vcfs/raw.vcf.gz.tbi",
+        ref = "config/{ref_name}.fasta",
+        indexes = expand("results/data/genome/{{ref_name}}.fasta.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
+        dictf = "config/{ref_name}.dict"
     output:
-        vcf = "results/{refGenome}/{prefix}_raw.vcf.gz",
-        tbi = "results/{refGenome}/{prefix}_raw.vcf.gz.tbi"
+        vcf = "results/{ref_name}/{prefix}_raw.vcf.gz",
+        tbi = "results/{ref_name}/{prefix}_raw.vcf.gz.tbi"
     conda:
         "../envs/bam2vcf.yml"
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['filterVcfs']['mem'],   # this is the overall memory requested
     log:
-        "logs/{refGenome}/sentieon_combine_gvcf/{prefix}_log.txt"
+        "logs/{ref_name}/sentieon_combine_gvcf/{prefix}_log.txt"
     benchmark:
-        "benchmarks/{refGenome}/sentieon_combine_gvcf/{prefix}_benchmark.txt"
+        "benchmarks/{ref_name}/sentieon_combine_gvcf/{prefix}_benchmark.txt"
     shell:
         "gatk VariantFiltration "
         "-R {input.ref} "

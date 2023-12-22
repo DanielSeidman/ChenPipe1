@@ -9,7 +9,7 @@ REFGENOME = samples['refGenome'].unique().tolist()
 
 rule all:
     input:
-        expand("results/QC/{prefix}_qc.html", refGenome=REFGENOME, prefix=config['final_prefix'])
+        expand("results/{ref_name}/QC/{prefix}_qc.html", refGenome=REFGENOME, prefix=config['final_prefix'])
 
 rule check_fai:
     """
@@ -17,7 +17,7 @@ rule check_fai:
     """
     input:
         vcf = "results/{prefix}_raw.vcf.gz",
-        fai = "results/data/genome/{refGenome}.fasta.fai",
+        fai = "results/data/genome/{ref_name}.fasta.fai",
     output:
         faiResult = "results/QC/{prefix}_fai_tmp.txt"
     run:
@@ -50,14 +50,14 @@ rule subsample_snps:
     input:
         vcf = "results/{prefix}_raw.vcf.gz",
         samps = "results/QC/{prefix}.samps.txt",
-        fai = "results/data/genome/{refGenome}.fasta.fai",
+        fai = "results/data/genome/{ref_name}.fasta.fai",
         sumstats = "results/summary_stats/{prefix}_bam_sumstats.txt"
     output:
         filtered = temp("results/QC/{prefix}_filtered.vcf.gz"),
         filtered_idx = temp("results/QC/{prefix}_filtered.vcf.gz.csi"),
         pruned = "results/QC/{prefix}.pruned.vcf.gz",
         snpqc = "results/QC/{prefix}_snpqc.txt",
-        fai = "results/QC/{prefix}.fna.fai",
+        fai = "results/QC/{prefix}.fasta.fai",
         sumstats = "results/QC/{prefix}_bam_sumstats.txt"
     conda:
         "envs/subsample_snps.yml"
@@ -111,7 +111,7 @@ rule plink:
         eigenval = "results/QC/{prefix}.eigenval",
         dist = "results/QC/{prefix}.dist",
         distid = "results/QC/{prefix}.dist.id",
-        king = "results/{refGenome}/QC/{prefix}.king"
+        king = "results/{ref_name}/QC/{prefix}.king"
     conda:
         "envs/plink.yml"
     resources:
@@ -128,12 +128,12 @@ rule admixture:
     Call Admixture. First, make a bim file that has no charecters in the chromosomes
     """
     input:
-        bed = "results/{refGenome}/QC/{prefix}.bed",
-        bim = "results/{refGenome}/QC/{prefix}.bim",
-        fam = "results/{refGenome}/QC/{prefix}.fam",
+        bed = "results/{ref_name}/QC/{prefix}.bed",
+        bim = "results/{ref_name}/QC/{prefix}.bim",
+        fam = "results/{ref_name}/QC/{prefix}.fam",
     output:
-        admix = "results/{refGenome}/QC/{prefix}.3.Q",
-        admix2 = "results/{refGenome}/QC/{prefix}.2.Q"
+        admix = "results/{ref_name}/QC/{prefix}.3.Q",
+        admix2 = "results/{ref_name}/QC/{prefix}.2.Q"
     params:
         outdir = lambda wc, input: input.bed.rsplit("/", 1)[0]
     resources:
@@ -154,7 +154,7 @@ rule admixture:
 
 rule generate_coords_file:
     output: 
-        "results/{refGenome}/QC/{prefix}.coords.txt"
+        "results/{ref_name}/QC/{prefix}.coords.txt"
     run:
         out_df = samples.loc[(samples['refGenome'] == wildcards.refGenome)][["BioSample", "long", "lat"]]
         out_df.drop_duplicates("BioSample", inplace=True)
@@ -166,24 +166,24 @@ rule qc_plots:
     Call plotting script
     """
     input:
-        eigenvec = "results/{refGenome}/QC/{prefix}.eigenvec",
-        eigenval = "results/{refGenome}/QC/{prefix}.eigenval",
-        depth = "results/{refGenome}/QC/{prefix}.idepth",
-        dist = "results/{refGenome}/QC/{prefix}.dist",
-        distid = "results/{refGenome}/QC/{prefix}.dist.id",
-        king = "results/{refGenome}/QC/{prefix}.king",
-        miss = "results/{refGenome}/QC/{prefix}.imiss",
-        admix3 = "results/{refGenome}/QC/{prefix}.3.Q",
-        admix2 = "results/{refGenome}/QC/{prefix}.2.Q",
-        snpqc = "results/{refGenome}/QC/{prefix}_snpqc.txt",
-        faiResult = "results/{refGenome}/QC/{prefix}_fai_tmp.txt",
-        bed = "results/{refGenome}/QC/{prefix}.bed",
-        bim = "results/{refGenome}/QC/{prefix}.bim",
-        fam = "results/{refGenome}/QC/{prefix}.fam",
-        sumstats = "results/{refGenome}/QC/{prefix}_bam_sumstats.txt",
-        summ = "results/{refGenome}/QC/{prefix}.FILTER.summary",
-        het = "results/{refGenome}/QC/{prefix}.het",
-        fai = "results/{refGenome}/QC/{prefix}.fna.fai",
+        eigenvec = "results/{ref_name}/QC/{prefix}.eigenvec",
+        eigenval = "results/{ref_name}/QC/{prefix}.eigenval",
+        depth = "results/{ref_name}/QC/{prefix}.idepth",
+        dist = "results/{ref_name}/QC/{prefix}.dist",
+        distid = "results/{ref_name}/QC/{prefix}.dist.id",
+        king = "results/{ref_name}/QC/{prefix}.king",
+        miss = "results/{ref_name}/QC/{prefix}.imiss",
+        admix3 = "results/{ref_name}/QC/{prefix}.3.Q",
+        admix2 = "results/{ref_name}/QC/{prefix}.2.Q",
+        snpqc = "results/{ref_name}/QC/{prefix}_snpqc.txt",
+        faiResult = "results/{ref_name}/QC/{prefix}_fai_tmp.txt",
+        bed = "results/{ref_name}/QC/{prefix}.bed",
+        bim = "results/{ref_name}/QC/{prefix}.bim",
+        fam = "results/{ref_name}/QC/{prefix}.fam",
+        sumstats = "results/{ref_name}/QC/{prefix}_bam_sumstats.txt",
+        summ = "results/{ref_name}/QC/{prefix}.FILTER.summary",
+        het = "results/{ref_name}/QC/{prefix}.het",
+        fai = "results/{ref_name}/QC/{prefix}.fasta.fai",
         coords = get_coords_if_available
     params:
         prefix = lambda wc, input: input.het[:-4],
@@ -192,7 +192,7 @@ rule qc_plots:
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 2000
     output: 
-        qcpdf = "results/{refGenome}/QC/{prefix}_qc.html"
+        qcpdf = "results/{ref_name}/QC/{prefix}_qc.html"
     conda:
         "envs/qc.yml"
     script:

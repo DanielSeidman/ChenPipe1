@@ -1,9 +1,9 @@
 rule get_fastq_pe:
     output:
-        temp("results/data/fastq/{sample}/{run}_1.fastq.gz"),
-        temp("results/data/fastq/{sample}/{run}_2.fastq.gz")
+        temp("results/{ref_name}/data/fastq/{sample}/{run}_1.fastq.gz"),
+        temp("results/{ref_name}/data/fastq/{sample}/{run}_2.fastq.gz")
     params:
-        outdir = os.path.join(workflow.default_remote_prefix, "results/data/fastq/{sample}/")
+        outdir = os.path.join(workflow.default_remote_prefix, "results/{ref_name}/data/fastq/{sample}/")
     conda:
         "../envs/fastq2bam.yml"
     threads:
@@ -35,9 +35,9 @@ rule fastp:
     input:
         unpack(get_reads)
     output:
-        r1 = "results/filtered_fastqs/{sample}/{run}_1.fastq.gz",
-        r2 = "results/filtered_fastqs/{sample}/{run}_2.fastq.gz",
-        summ = "results/summary_stats/{sample}/{run}.fastp.out"
+        r1 = "results/{ref_name}/filtered_fastqs/{sample}/{run}_1.fastq.gz",
+        r2 = "results/{ref_name}/filtered_fastqs/{sample}/{run}_2.fastq.gz",
+        summ = "results/{ref_name}/summary_stats/{sample}/{run}.fastp.out"
     conda:
         "../envs/fastq2bam.yml"
     threads:

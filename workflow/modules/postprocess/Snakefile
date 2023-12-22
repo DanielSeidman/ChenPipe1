@@ -50,7 +50,7 @@ rule update_bed:
     """
     input:
         bed = "results/{prefix}_callable_sites.bed",
-        fai = "results/data/genome/{refGenome}.fasta.fai"
+        fai = "results/data/genome/{ref_name}.fasta.fai"
     output:
         bed = "results/postprocess/{prefix}_exclude_sites.bed",
         tmp_bed = temp("results/postprocess/{prefix}_tmp.bed")
@@ -102,12 +102,12 @@ rule subset_indels:
         vcf = "results/postprocess/{prefix}_filtered.TEMP.vcf.gz",
         idx = "results/postprocess/{prefix}_filtered.TEMP.vcf.gz.csi",
     output: 
-        vcf = "results/{refGenome}/{prefix}_clean_indels.vcf.gz",
-        idx = "results/{refGenome}/{prefix}_clean_indels.vcf.gz.tbi"
+        vcf = "results/{ref_name}/{prefix}_clean_indels.vcf.gz",
+        idx = "results/{ref_name}/{prefix}_clean_indels.vcf.gz.tbi"
     conda:
         "envs/filter.yml"
     log:
-        "logs/{refGenome}/postprocess/{prefix}_subset_indels.txt"
+        "logs/{ref_name}/postprocess/{prefix}_subset_indels.txt"
     shell:
         """
         bcftools view -v indels -O z -o {output.vcf} {input.vcf}
@@ -119,15 +119,15 @@ rule subset_snps:
     Produce a clean vcf with only simple snps.
     """
     input: 
-        vcf = "results/{refGenome}/postprocess/{prefix}_filtered.TEMP.vcf.gz",
-        idx = "results/{refGenome}/postprocess/{prefix}_filtered.TEMP.vcf.gz.csi"
+        vcf = "results/{ref_name}/postprocess/{prefix}_filtered.TEMP.vcf.gz",
+        idx = "results/{ref_name}/postprocess/{prefix}_filtered.TEMP.vcf.gz.csi"
     output: 
-        vcf = "results/{refGenome}/{prefix}_clean_snps.vcf.gz",
-        idx = "results/{refGenome}/{prefix}_clean_snps.vcf.gz.tbi"
+        vcf = "results/{ref_name}/{prefix}_clean_snps.vcf.gz",
+        idx = "results/{ref_name}/{prefix}_clean_snps.vcf.gz.tbi"
     conda:
         "envs/filter.yml"    
     log:
-        "logs/{refGenome}/postprocess/{prefix}_subset_snps.txt"
+        "logs/{ref_name}/postprocess/{prefix}_subset_snps.txt"
     shell:
         """
         bcftools view -v snps -e 'TYPE ~ "indel"' -O z -o {output.vcf} {input.vcf}

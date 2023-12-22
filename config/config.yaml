@@ -3,18 +3,21 @@
 ##############################
 
 samples: "config/samples.csv" # path to the sample metadata CSV
-reference: "config/reference.fasta" # path to the reference
+ref_path: "config/reference.fasta" # path to the reference. Must be in config/
+ref_name: "reference" # name of the reference file without file extensions
 resource_config: "config/resources.yaml" # path to resources yaml config
 final_prefix: "" # prefix for final output files
-intervals: True #Set to True if you want to perform variant calling using interval approach.
+intervals: False #Set to True if you want to perform variant calling using interval approach.
 sentieon: False #set to True if you want to use sentieon, False if you want GATK
 sentieon_lic: "" #set to path of sentieon license
 remote_reads: False # Set True if reads are in a Google Bucket seperate from --default-remote-prefix.
 remote_reads_prefix: "" # set to google bucket prefix where reads live
 bigtmp: "" #Set to a path with lots of free space to use for commands that require large amounts of temp space; defaults to system tmpdir if empty
-cov_filter: True #set to True if you want to include coverage thresholds in the callable sites bed file (default uses mappability only)
+cov_filter: False #set to True if you want to include coverage thresholds in the callable sites bed file (default uses mappability only)
 generate_trackhub: True #Set to true if you want to generate a Genome Browser Trackhub. Dependent on postprocessing module.
 trackhub_email: ""
+scaffolds_to_exclude: "mtDNA,Y" #comma separated, no spaces list of scaffolds to exclude from final clean vcfs. Set to blank to disable.
+
 ##############################
 # Variables you *might* need to change
 ##############################
@@ -57,7 +60,7 @@ min_depth: 2
 contig_size: 10000 # snps on contigs this size or smaller will be filtered from the final clean vcfs. Set to 0 to disable.
 maf: 0.01 #snps with MAF below this value will be filtered from the final clean vcfs. Set to 0 to disable.
 missingness: 0.75 #snps with missingness greater than this value will be filtered from the final clean vcfs. Set to 1 to disable.
-scaffolds_to_exclude: "mtDNA,Y" #comma separated, no spaces list of scaffolds to exclude from final clean vcfs. Set to blank to disable.
+
 
 ########################################
 ## coverage thresholds ##

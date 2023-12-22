@@ -4,10 +4,10 @@ rule download_reference:
     input:
         ref = get_ref
     output:
-        ref = "results/data/genome/{refGenome}.fasta"
+        ref = "config/{ref_name}.fasta"
     params:
-        dataset = "results/data/genome/{refGenome}_dataset.zip",
-        outdir = "results/data/genome/{refGenome}"
+        dataset = "config/{ref_name}_dataset.zip",
+        outdir = "config/{ref_name}"
     conda:
         "../envs/fastq2bam.yml"
     log:
@@ -21,18 +21,18 @@ rule download_reference:
             mkdir -p {params.outdir}
             datasets download genome accession --exclude-gff3 --exclude-protein --exclude-rna --filename {params.dataset} {wildcards.refGenome} \
             && 7z x {params.dataset} -aoa -o{params.outdir} \
-            && cat {params.outdir}/ncbi_dataset/data/{wildcards.refGenome}/*.fna > {output.ref}
+            && cat {params.outdir}/ncbi_dataset/data/{wildcards.refGenome}/*.fasta > {output.ref}
         else
             cp {input.ref} {output.ref}
         fi
         """
 rule index_reference:
     input:
-        ref = "results/data/genome/{refGenome}.fasta"
+        ref = "config/{ref_name}.fasta"
     output:
-        indexes = expand("results/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb"]),
-        fai = "results/data/genome/{refGenome}.fasta.fai",
-        dictf = "results/data/genome/{refGenome}.dict"
+        indexes = expand("config/{{ref_name}}.fasta.{ext}", ext=["sa", "pac", "bwt", "ann", "amb"]),
+        fai = "config/{ref_name}.fasta.fai",
+        dictf = "config/{ref_name}.dict"
     conda:
         "../envs/fastq2bam.yml"
     resources:
