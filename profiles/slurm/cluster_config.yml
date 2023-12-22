@@ -1,5 +1,5 @@
 __default__:
-    partition: "standard,rosalind"
+    partition: "rosalind"
     time: 9000
     nodes: 1
     mem: 10000
