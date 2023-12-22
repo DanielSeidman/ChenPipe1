@@ -10,9 +10,9 @@ rule picard_intervals:
     conda:
         '../envs/bam2vcf.yml'
     log:
-        "logs/picard_intervals/log.txt"
+        "logs/{ref_name}/picard_intervals/log.txt"
     benchmark:
-        "benchmarks/picard_intervals/benchmark.txt"
+        "benchmarks/{ref_name}/picard_intervals/benchmark.txt"
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['process_ref']['mem']
     shell:

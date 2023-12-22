@@ -32,17 +32,17 @@ rule degenotate:
     Runs degenotate to compute MK tables
     """
     input:
-        vcf = "results/{prefix}_clean_snps.vcf.gz",
-        genome = "results/mk/{ref_name}.fasta",
-        gff = "results/mk/{ref_name}.gff",
-        exclude = "results/mk/{prefix}_exclude.txt",
-        outgroups = "results/mk/{prefix}_ougroups.txt"
+        vcf = "results/{ref_name}/{prefix}_clean_snps.vcf.gz",
+        genome = "results/{ref_name}/mk/{ref_name}.fasta",
+        gff = "results/{ref_name}/mk/{ref_name}.gff",
+        exclude = "results/{ref_name}/mk/{prefix}_exclude.txt",
+        outgroups = "results/{ref_name}/mk/{prefix}_ougroups.txt"
     output:
-        "results/mk/{prefix}_mk_table.tsv"
+        "results/{ref_name}/mk/{prefix}_mk_table.tsv"
     params:
         delim = "space"
     log:
-        "logs/mk/{prefix}_degenotate.txt"
+        "logs/{ref_name}/mk/{prefix}_degenotate.txt"
     conda:
         "envs/mk.yml"
     shell:

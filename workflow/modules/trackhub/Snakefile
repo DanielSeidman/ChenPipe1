@@ -39,12 +39,12 @@ rule strip_vcf:
     Strips vcf of all info/filters to reduce size
     """
     input:
-        vcf = expand("results/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
+        vcf = expand("results/{ref_name}/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
     output:
-        vcf = "results/trackhub/info_stripped_snps.vcf.gz",
-        tbi = "results/trackhub/info_stripped_snps.vcf.gz.tbi"
+        vcf = "results/{ref_name}/trackhub/info_stripped_snps.vcf.gz",
+        tbi = "results/{ref_name}/trackhub/info_stripped_snps.vcf.gz.tbi"
     log:
-        "logs/trackhub/strip_vcf.log"
+        "logs/{ref_name}/trackhub/strip_vcf.log"
     conda:
         "envs/trackhub.yml"
     shell:
@@ -56,11 +56,11 @@ rule strip_vcf:
 
 rule calc_tajima:
     input:
-        vcf = expand("results/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
+        vcf = expand("results/{ref_name}/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
     output:
-        temp("results/trackhub/{window}.Tajima")
+        temp("results/{ref_name}/trackhub/{window}.Tajima")
     log:
-        "logs/trackhub/tajima/{window}.log"
+        "logs/{ref_name}/trackhub/tajima/{window}.log"
     conda:
         "envs/trackhub.yml"
     shell:
@@ -70,11 +70,11 @@ rule calc_tajima:
 
 rule calc_snpden:
     input:
-        vcf = expand("results/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
+        vcf = expand("results/{ref_name}/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
     output:
-        temp("results/trackhub/{window}.SNP-Density")
+        temp("results/{ref_name}/trackhub/{window}.SNP-Density")
     log:
-        "logs/trackhub/SNP-Density/{window}.log"
+        "logs/{ref_name}/trackhub/SNP-Density/{window}.log"
     conda:
         "envs/trackhub.yml"
     shell:
@@ -84,11 +84,11 @@ rule calc_snpden:
 
 rule calc_pi:
     input:
-        vcf = expand("results/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
+        vcf = expand("results/{ref_name}/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
     output:
-        temp( "results/trackhub/{window}.Pi")
+        temp( "results/{ref_name}/trackhub/{window}.Pi")
     log:
-        "logs/trackhub/Pi/{window}.log"
+        "logs/{ref_name}/trackhub/Pi/{window}.log"
     conda:
         "envs/trackhub.yml"
     shell:
@@ -98,19 +98,19 @@ rule calc_pi:
 
 rule chrom_sizes:
     input:
-        "results/data/genome/{ref_name}.fasta.fai"
+        "results/{ref_name}/data/genome/{ref_name}.fasta.fai"
     output:
-        "results/trackhub/chrom.sizes"
+        "results/{ref_name}/trackhub/chrom.sizes"
     shell:
         "cut -f1,2 {input} > {output}"
 
 rule bcftools_depth:
     input:
-        vcf = expand("results/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
-        chrom_sizes = "results/trackhub/chrom.sizes"
+        vcf = expand("results/{ref_name}/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
+        chrom_sizes = "results/{ref_name}/trackhub/chrom.sizes"
     output:
-        bg = temp("results/trackhub/depth.bg"),
-        bw = "results/trackhub/depth.bw"
+        bg = temp("results/{ref_name}/trackhub/depth.bg"),
+        bw = "results/{ref_name}/trackhub/depth.bw"
         
     conda:
         "envs/trackhub.yml"
@@ -122,11 +122,11 @@ rule bcftools_depth:
 
 rule vcftools_freq:
     input:
-        vcf = expand("results/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
-        chrom_sizes = "results/trackhub/chrom.sizes"
+        vcf = expand("results/{ref_name}/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
+        chrom_sizes = "results/{ref_name}/trackhub/chrom.sizes"
     output:
-        bg = temp("results/trackhub/allele_freq.bg"),
-        bw = "results/trackhub/allele_freq.bw"
+        bg = temp("results/{ref_name}/trackhub/allele_freq.bg"),
+        bw = "results/{ref_name}/trackhub/allele_freq.bw"
     
     conda:
         "envs/trackhub.yml"
@@ -161,7 +161,7 @@ rule non_callable_sites:
     Calculates complement of callable sites to make 'non-callable sites' this makes visualzing on browser easier.
     """
     input:
-        callable_sites = expand("results/{prefix}_callable_sites.bed", prefix=config['final_prefix']),
+        callable_sites = expand("results/{ref_name}/{prefix}_callable_sites.bed", prefix=config['final_prefix']),
         chrom_sizes = "results/{ref_name}/trackhub/chrom.sizes",
         
     output:

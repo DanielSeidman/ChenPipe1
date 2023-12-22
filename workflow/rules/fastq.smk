@@ -9,7 +9,7 @@ rule get_fastq_pe:
     threads:
         resources['get_fastq_pe']['threads']
     benchmark:
-        "benchmarks/getfastq/{sample}_{run}.txt"
+        "benchmarks/{ref_name}/getfastq/{sample}_{run}.txt"
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['get_fastq_pe']['mem'],
         tmpdir = get_big_temp
@@ -45,9 +45,9 @@ rule fastp:
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['fastp']['mem'],
     log:
-        "logs/fastp/{sample}/{run}.txt"
+        "logs/{ref_name}/fastp/{sample}/{run}.txt"
     benchmark:
-        "benchmarks/fastp/{sample}_{run}.txt"
+        "benchmarks/{ref_name}/fastp/{sample}_{run}.txt"
     shell:
         "fastp --in1 {input.r1} --in2 {input.r2} "
         "--out1 {output.r1} --out2 {output.r2} "
