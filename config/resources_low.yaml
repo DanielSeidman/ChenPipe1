@@ -11,6 +11,10 @@ get_fastq_pe:
 index_ref:
   mem: 10000
 
+trim_galore_call:
+  threads: 1
+  mem: 4000
+
 # fastp program
 fastp:
   threads: 8

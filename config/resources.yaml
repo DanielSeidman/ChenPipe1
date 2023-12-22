@@ -7,6 +7,10 @@ get_fastq_pe:
   threads: 8
   mem: 4000
 
+trim_galore_call:
+  threads: 1
+  mem: 4000
+
 # index reference
 index_ref:
   mem: 10000
