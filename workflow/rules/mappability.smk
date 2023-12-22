@@ -31,7 +31,7 @@ rule mappability_bed:
         map = "results/{ref_name}/genmap/sorted_mappability.bg"
     output:
         callable_sites = "results/{ref_name}/callable_sites/{prefix}_callable_sites_map.bed" if config['cov_filter'] else "results/{ref_name}/{prefix}_callable_sites.bed",
-        tmp_map = temp("results/callable_sites/{prefix}_temp_map.bed")
+        tmp_map = temp("results/{ref_name}/callable_sites/{prefix}_temp_map.bed")
     conda:
         "../envs/mappability.yml"
     benchmark:
