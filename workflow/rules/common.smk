@@ -43,18 +43,7 @@ def get_output():
 def merge_bams_input(wc):
     return expand("results/{ref_name}/bams/preMerge/{{sample}}/{run}.bam", run=samples.loc[samples['BioSample'] == wc.sample]['Run'].tolist())
 
-def get_ref(wildcards):
-    if 'refPath' in samples.columns:
-        _refs = samples.loc[(samples['refGenome'] == wildcards.refGenome)]['refPath'].dropna().unique().tolist()
-        for ref in _refs:
-            if workflow.default_remote_prefix == "":
-                if not os.path.exists(ref):
-                    raise WorkflowError(f"Reference genome {ref} does not exist")
-                elif ref.rsplit(".", 1)[1] == '.gz':
-                    raise WorkflowError(f"Reference genome {ref} must be unzipped first.")
-        return _refs
-    else:
-        return []
+
         
 def sentieon_combine_gvcf_cmd_line(wc):
     gvcfs = sentieon_combine_gvcf_input(wc)['gvcfs']
