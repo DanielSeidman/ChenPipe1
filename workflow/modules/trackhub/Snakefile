@@ -39,7 +39,7 @@ rule strip_vcf:
     Strips vcf of all info/filters to reduce size
     """
     input:
-        vcf = expand("results/{ref_name}/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
+        vcf = expand("results/{{ref_name}}/{prefix}_clean_snps.vcf.gz", prefix=config['final_prefix']),
     output:
         vcf = "results/{ref_name}/trackhub/info_stripped_snps.vcf.gz",
         tbi = "results/{ref_name}/trackhub/info_stripped_snps.vcf.gz.tbi"
