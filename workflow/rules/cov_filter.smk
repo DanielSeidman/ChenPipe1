@@ -9,9 +9,9 @@ rule compute_d4:
     conda:
         "../envs/cov_filter.yml"
     log:
-        "logs/compute_d4/{sample}.txt"
+        "logs/{ref_name}/compute_d4/{sample}.txt"
     benchmark:
-        "benchmarks/compute_d4/{sample}.txt"
+        "benchmarks/{ref_name}/compute_d4/{sample}.txt"
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['compute_d4']['mem']
     threads:

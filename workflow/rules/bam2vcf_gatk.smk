@@ -22,9 +22,9 @@ rule bam2gvcf:
         mem_mb = lambda wildcards, attempt: attempt * resources['bam2gvcf']['mem'],   # this is the overall memory requested
         reduced = lambda wildcards, attempt: attempt * (resources['bam2gvcf']['mem'] - 3000)  # this is the maximum amount given to java
     log:
-        "logs/gatk_hc/{sample}.txt"
+        "logs/{ref_name}/gatk_hc/{sample}.txt"
     benchmark:
-        "benchmarks/gatk_hc/{sample}.txt"
+        "benchmarks/{ref_name}/gatk_hc/{sample}.txt"
     params:
         minPrun=config['minP'],
         minDang=config['minD'],

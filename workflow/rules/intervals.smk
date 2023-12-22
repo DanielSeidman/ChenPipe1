@@ -45,9 +45,9 @@ checkpoint create_db_intervals:
     params:
         max_intervals = get_db_interval_count
     log:
-        "logs/db_intervals/log.txt"
+        "logs/{ref_name}/db_intervals/log.txt"
     benchmark:
-        "benchmarks/db_intervals/benchmark.txt"
+        "benchmarks/{ref_name}/db_intervals/benchmark.txt"
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['create_db_intervals']['mem']
     conda:
@@ -73,9 +73,9 @@ checkpoint create_gvcf_intervals:
     params:
         max_intervals = config["num_gvcf_intervals"]
     log:
-        "logs/gvcf_intervals/log.txt"
+        "logs/{ref_name}/gvcf_intervals/log.txt"
     benchmark:
-        "benchmarks/gvcf_intervals/benchmark.txt"
+        "benchmarks/{ref_name}/gvcf_intervals/benchmark.txt"
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['create_gvcf_intervals']['mem']
     conda:

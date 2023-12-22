@@ -37,9 +37,9 @@ rule bwa_map:
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['bwa_map']['mem']
     log:
-        "logs/bwa_mem/{sample}/{run}.txt"
+        "logs/{ref_name}/bwa_mem/{sample}/{run}.txt"
     benchmark:
-        "benchmarks/bwa_mem/{sample}_{run}.txt"
+        "benchmarks/{ref_name}/bwa_mem/{sample}_{run}.txt"
     shell:
         "bwa mem -M -t {threads} -R {params.rg} {input.ref} {input.r1} {input.r2} 2> {log} | samtools sort -o {output.bam} - && samtools index {output.bam} {output.bai}"
 
@@ -72,8 +72,8 @@ rule dedup:
         threads = resources['dedup']['threads'],
         mem_mb = lambda wildcards, attempt: attempt * resources['dedup']['mem']
     log:
-        "logs/sambamba_dedup/{sample}.txt"
+        "logs/{ref_name}/sambamba_dedup/{sample}.txt"
     benchmark:
-        "benchmarks/sambamba_dedup/{sample}.txt"
+        "benchmarks/{ref_name}/sambamba_dedup/{sample}.txt"
     shell:
         "sambamba markdup -t {threads} {input.bam} {output.dedupBam} 2> {log}"

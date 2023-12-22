@@ -14,9 +14,9 @@ rule sentieon_map:
         "../envs/sentieon.yml"
     threads: resources['sentieon_map']['threads']
     log:
-        "logs/sentieon_map/{sample}/{run}.txt"
+        "logs/{ref_name}/sentieon_map/{sample}/{run}.txt"
     benchmark:
-        "benchmarks/sentieon_map/{sample}/{run}.txt"
+        "benchmarks/{ref_name}/sentieon_map/{sample}/{run}.txt"
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['sentieon_map']['mem'],
         machine_type = resources['sentieon_map']['machine_type']
@@ -36,9 +36,9 @@ rule merge_bams:
     conda:
         "../envs/fastq2bam.yml"
     log:
-        "logs/merge_bams/{sample}.txt"
+        "logs/{ref_name}/merge_bams/{sample}.txt"
     benchmark:
-        "benchmarks/merge_bams/{sample}.txt"
+        "benchmarks/{ref_name}/merge_bams/{sample}.txt"
     resources:
         mem_mb = lambda wildcards, attempt: attempt * resources['merge_bams']['mem']
     shell:
@@ -57,9 +57,9 @@ rule sentieon_dedup:
     conda:
         "../envs/sentieon.yml"
     log:
-        "logs/sentieon_dedup/{sample}.txt"
+        "logs/{ref_name}/sentieon_dedup/{sample}.txt"
     benchmark:
-        "benchmarks/sentieon_dedup/{sample}.txt"
+        "benchmarks/{ref_name}/sentieon_dedup/{sample}.txt"
     threads: 
         resources['sentieon_dedup']['threads']
     resources:
@@ -92,9 +92,9 @@ rule sentieon_haplotyper:
     conda:
         "../envs/sentieon.yml"
     log:
-        "logs/sentieon_haplotyper/{sample}.txt"
+        "logs/{ref_name}/sentieon_haplotyper/{sample}.txt"
     benchmark:
-        "benchmarks/sentieon_haplotyper/{sample}.txt"
+        "benchmarks/{ref_name}/sentieon_haplotyper/{sample}.txt"
     shell:
         """
         export SENTIEON_LICENSE={params.lic}
