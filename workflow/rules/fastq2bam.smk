@@ -11,7 +11,7 @@ rule trim_galore_call:
     resources:
         mem_mb = lambda wildcards,attempt: attempt * resources['trim_galore_call']['mem']
     shell:
-        "trim_galore --paired {input.r1} {input.r2} -o {run}_trimgalore/ "
+        "trim_galore --paired {input.r1} {input.r2} -o {wildcards.run}_trimgalore/ "
 
 
 rule bwa_map:
