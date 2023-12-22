@@ -2,8 +2,8 @@ rule trim_galore_call:
     input:
         unpack(get_reads)
     output:
-        r1trim="results/{ref_name}/trimgalore_fastqs/{sample}/{run}_1.fastq.gz",
-        r2trim="results/{ref_name}/trimgalore_fastqs/{sample}/{run}_2.fastq.gz",
+        r1trim="results/{ref_name}/trimgalore_fastqs/{sample}/{run}_1_trimmed.fastq.gz",
+        r2trim="results/{ref_name}/trimgalore_fastqs/{sample}/{run}_2_trimmed.fastq.gz",
     conda:
         "../envs/fastq2bam.yml"
     threads:
@@ -13,13 +13,13 @@ rule trim_galore_call:
     log:
         "logs/{ref_name}/trim_galore/{sample}/{run}.txt"
     shell:
-        "trim_galore --paired {input.r1} {input.r2} -o {wildcards.run}_trimgalore/ "
+        "trim_galore --paired {input.r1} {input.r2} -o results/{wildcards.ref_name}/trimgalore_fastqs/{wildcards.sample}/ "
 
 
 rule bwa_map:
     input:
-        r1 = "results/{ref_name}/trimgalore_fastqs/{sample}/{run}_1.fastq.gz",
-        r2 = "results/{ref_name}/trimgalore_fastqs/{sample}/{run}_2.fastq.gz",
+        r1 = "results/{ref_name}/trimgalore_fastqs/{sample}/{run}_1_trimmed.fastq.gz",
+        r2 = "results/{ref_name}/trimgalore_fastqs/{sample}/{run}_2_trimmed.fastq.gz",
         ref = "config/{ref_name}.fasta",
         indexes=expand("config/{{ref_name}}.fasta.{ext}",ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
         dictf="config/{ref_name}.dict",
