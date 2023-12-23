@@ -31,8 +31,8 @@ rule bam2gvcf:
         "../envs/bam2vcf.yml"
     shell:
         "gatk HaplotypeCaller "
-        "--java-options \"-Xmx{resources.reduced}m\" "
-        "-R {input.ref}"
+        "--java-options \"-Xmx{resources.reduced}m\" " 
+        "-R {input.ref} "
         "-I {input.bam} "
         "-O {output.gvcf} "
         "-ploidy {params.ploidy} "
