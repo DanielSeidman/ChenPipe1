@@ -39,7 +39,7 @@ rule bwa_map:
     benchmark:
         "benchmarks/{ref_name}/bwa_mem/{sample}_{run}.txt"
     shell:
-        "bwa mem -M -t {threads} -R {params.rg} {input.ref} {input.r1} {input.r2} 2> {log} | samtools sort -o {output.bam} - && samtools index {output.bam} {output.bai}"
+        "bwa mem -M -t {threads} -R '{params.rg}' {input.ref} {input.r1} {input.r2} 2> {log} | samtools sort -o {output.bam} - && samtools index {output.bam} {output.bai}"
 
 rule merge_bams:
     input:
