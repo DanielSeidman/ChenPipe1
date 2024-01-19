@@ -116,13 +116,13 @@ def get_reads(wc):
             #f"results/{config['ref_name']}/data/fastq/{wc.sample}/"{wc.run}_1.fastq.gz"
             r2dir = "results/"+config['ref_name']+"/data/fastq/"+wc.sample+"/"
             r2=r2dir+wc.run+"_2.fastq.gz"
-            if(not os.path.exists(r1)):
+            if (not os.path.exists(r1)):
                 if not os.path.isdir(os.path.dirname(r1dir)):
                     os.makedirs(os.path.dirname(r1dir))
                 os.symlink(row.fq1.item(),r1)
-            if (not os.path.exists(r2)):
-		if not os.path.isdir(os.path.dirname(r2dir)):
-    		    os.makedirs(os.path.dirname(r2dir))
+            if not os.path.exists(r2):
+                if not os.path.isdir(os.path.dirname(r2dir)):
+                    os.makedirs(os.path.dirname(r2dir))
                 os.symlink(row.fq2.item(),r2)
             return {"r1": r1, "r2": r2}
         else:
