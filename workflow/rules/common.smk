@@ -109,6 +109,8 @@ def sentieon_combine_gvcf_input(wc):
 def get_reads(wc):
     """Returns local read files if present. Defaults to SRR if no local reads in sample sheet."""
     row = samples.loc[samples['Run'] == wc.run]
+    print("test b"+wc.run)
+    print("test b"+wc.sample)
     if 'fq1' in samples.columns and 'fq2' in samples.columns:
         if os.path.exists(row.fq1.item()) and os.path.exists(row.fq2.item()):
             r1dir = "results/"+config['ref_name']+"/data/fastq/"+wc.sample+"/"
