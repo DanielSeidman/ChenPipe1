@@ -128,9 +128,9 @@ def get_reads(wc):
                 os.symlink(row.fq2.item(),r2)
             return {"r1": r1, "r2": r2}
         else:
-            print(row.fq1.item())
-            print(row.fq2.item())
-            raise WorkflowError(f"fq1 and fq2 specified for {{wc.sample}}, but files were not found.")
+            print(row.fq1.item(),os.path.exists(row.fq1.item()))
+            print(row.fq2.item(),os.path.exists(row.fq2.item()))
+            raise WorkflowError(f"fq1 and fq2 specified for {wc.sample}, but files were not found.")
     else:
         raise WorkflowError(f"fq1 and fq2 required for {wc.sample}, but input.")
 
