@@ -4,10 +4,11 @@
 #SBATCH -e err
 #SBATCH -p RM
 #SBATCH -n 1
-#SBATCH -t 00:30:00
+#SBATCH -t 00:01:00
 
+echo $(conda info --base)
 CONDA_BASE=$(conda info --base)
 source $CONDA_BASE/etc/profile.d/conda.sh
 conda activate snparcher
-snakemake --snakefile workflow/Snakefile --profile ./profiles/slurm
-
+conda list
+#snakemake --snakefile workflow/Snakefile --profile ./profiles/slurm

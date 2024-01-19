@@ -111,11 +111,18 @@ def get_reads(wc):
     row = samples.loc[samples['Run'] == wc.run]
     if 'fq1' in samples.columns and 'fq2' in samples.columns:
         if os.path.exists(row.fq1.item()) and os.path.exists(row.fq2.item()):
-            r1 = f"results/{config['ref_name']}/data/fastq/{wc.sample}/{wc.run}_1.fastq.gz"
-            r2 = f"results/{config['ref_name']}/data/fastq/{wc.sample}/{wc.run}_2.fastq.gz"
+            r1dir = "results/"+config['ref_name']+"/data/fastq/"+wc.sample+"/"
+            r1=r1dir+wc.run+"_1.fastq.gz"
+            #f"results/{config['ref_name']}/data/fastq/{wc.sample}/"{wc.run}_1.fastq.gz"
+            r2dir = "results/"+config['ref_name']+"/data/fastq/"+wc.sample+"/"
+            r2=r2dir+wc.run+"_2.fastq.gz"
             if(not os.path.exists(r1)):
+                if not os.path.isdir(os.path.dirname(r1dir)):
+                    os.makedirs(os.path.dirname(r1dir))
                 os.symlink(row.fq1.item(),r1)
             if (not os.path.exists(r2)):
+		if not os.path.isdir(os.path.dirname(r2dir)):
+    		    os.makedirs(os.path.dirname(r2dir))
                 os.symlink(row.fq2.item(),r2)
             return {"r1": r1, "r2": r2}
         else:
