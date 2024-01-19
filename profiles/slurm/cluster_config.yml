@@ -3,5 +3,5 @@ __default__:
     time: 2:00:00
     nodes: 1
     output: "logs/slurm/slurm-%j.out"
-    ntasks-per-node: 128
+    ntasks-per-node: 32
 
