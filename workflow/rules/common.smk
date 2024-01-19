@@ -116,7 +116,7 @@ def get_reads(wc):
             #f"results/{config['ref_name']}/data/fastq/{wc.sample}/"{wc.run}_1.fastq.gz"
             r2dir = "results/"+config['ref_name']+"/data/fastq/"+wc.sample+"/"
             r2=r2dir+wc.run+"_2.fastq.gz"
-            if (not os.path.exists(r1)):
+            if not os.path.exists(r1):
                 if not os.path.isdir(os.path.dirname(r1dir)):
                     os.makedirs(os.path.dirname(r1dir))
                 os.symlink(row.fq1.item(),r1)
@@ -126,6 +126,8 @@ def get_reads(wc):
                 os.symlink(row.fq2.item(),r2)
             return {"r1": r1, "r2": r2}
         else:
+            print(row.fq1.item())
+            print(row.fq2.item())
             raise WorkflowError(f"fq1 and fq2 specified for {wc.sample}, but files were not found.")
     else:
         raise WorkflowError(f"fq1 and fq2 required for {wc.sample}, but input.")
