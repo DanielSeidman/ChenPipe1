@@ -3,8 +3,8 @@
 ##############################
 
 samples: "config/samples.csv" # path to the sample metadata CSV
-ref_path: "config/reference.fasta" # path to the reference. Must be in config/
-ref_name: "reference" # name of the reference file without file extensions
+ref_path: "config/FSJ.v3_final.fasta" # path to the reference. Must be in config/
+ref_name: "FSJ.v3_final" # name of the reference file without file extensions
 resource_config: "config/resources.yaml" # path to resources yaml config
 final_prefix: "test2" # prefix for final output files
 intervals: False #Set to True if you want to perform variant calling using interval approach.
