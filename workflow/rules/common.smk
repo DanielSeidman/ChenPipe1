@@ -130,7 +130,7 @@ def get_reads(wc):
         else:
             print(row.fq1.item())
             print(row.fq2.item())
-            raise WorkflowError(f"fq1 and fq2 specified for {wc.sample}, but files were not found.")
+            raise WorkflowError(f"fq1 and fq2 specified for {{wc.sample}}, but files were not found.")
     else:
         raise WorkflowError(f"fq1 and fq2 required for {wc.sample}, but input.")
 
