@@ -29,28 +29,28 @@ cluster_config = slurm_utils.load_cluster_config(CLUSTER_CONFIG)
 
 # 1) sbatch default arguments
 sbatch_options.update(slurm_utils.parse_sbatch_defaults(SBATCH_DEFAULTS))
-print("1",sbatch_options)
+#print("1",sbatch_options)
 # 2) cluster_config defaults
 sbatch_options.update(cluster_config["__default__"])
-print("2",sbatch_options)
+#print("2",sbatch_options)
 # 3) Convert resources (no unit conversion!) and threads
 sbatch_options.update(
     slurm_utils.convert_job_properties(job_properties, RESOURCE_MAPPING)
 )
-print("3",sbatch_options)
+#print("3",sbatch_options)
 # 4) cluster_config for particular rule
 sbatch_options.update(cluster_config.get(job_properties.get("rule"), {}))
-print("4",sbatch_options)
+#print("4",sbatch_options)
 # 5) cluster_config options
 sbatch_options.update(job_properties.get("cluster", {}))
-print("5",sbatch_options)
+#print("5",sbatch_options)
 # 6) Advanced conversion of parameters
 if ADVANCED_ARGUMENT_CONVERSION:
     sbatch_options = slurm_utils.advanced_argument_conversion(sbatch_options)
-print("6",sbatch_options)
+#print("6",sbatch_options)
 #7) Format pattern in snakemake style
 sbatch_options = slurm_utils.format_values(sbatch_options, job_properties)
-print("7",sbatch_options)
+#print("7",sbatch_options)
 # ensure sbatch output dirs exist
 for o in ("output", "error"):
     slurm_utils.ensure_dirs_exist(sbatch_options[o]) if o in sbatch_options else None
