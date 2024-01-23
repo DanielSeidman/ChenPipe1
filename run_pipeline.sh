@@ -10,5 +10,6 @@
 CONDA_BASE=$(conda info --base)
 source $CONDA_BASE/etc/profile.d/conda.sh
 conda activate snparcher
+umask u=rwx,g=rwx,o=rx
 snakemake --snakefile workflow/Snakefile --profile ./profiles/slurm
 
