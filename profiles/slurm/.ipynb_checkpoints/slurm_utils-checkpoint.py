@@ -127,6 +127,7 @@ def submit_job(jobscript, **sbatch_options):
     optsbatch_options = [f"--{k}={v}" for k, v in sbatch_options.items()]
     try:
         res = subprocess.check_output(["sbatch"] + optsbatch_options + [jobscript])
+        print(res)##Debugging
     except subprocess.CalledProcessError as e:
         raise e
     # Get jobid
