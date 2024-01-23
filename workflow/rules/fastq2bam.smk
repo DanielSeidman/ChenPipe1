@@ -9,7 +9,7 @@ rule trim_galore_call:
     threads:
         resources['trim_galore_call']['threads']
     resources:
-        mem_mb = lambda wildcards,attempt: attempt * resources['trim_galore_call']['mem']
+        mem_mb = lambda wildcards,attempt: attempt * resources['trim_galore_call']['threads'] * 4000
     log:
         "logs/{ref_name}/trim_galore/{sample}/{run}.txt"
     shell:
@@ -33,7 +33,7 @@ rule bwa_map:
     threads:
         resources['bwa_map']['threads']
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * resources['bwa_map']['mem']
+        mem_mb = lambda wildcards, attempt: attempt * resources['bwa_map']['threads'] * 4000
     log:
         "logs/{ref_name}/bwa_mem/{sample}/{run}.txt"
     benchmark:
@@ -54,7 +54,7 @@ rule merge_bams:
     benchmark:
         "benchmarks/{ref_name}/merge_bams/{sample}.txt"
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * resources['merge_bams']['mem']
+        mem_mb = lambda wildcards, attempt: attempt * resources['merge_bams']['threads'] * 4000
     shell:
         "samtools merge {output.bam} {input} && samtools index {output.bam} > {log}"
 
@@ -68,7 +68,7 @@ rule dedup:
         "../envs/sambamba.yml"
     resources:
         threads = resources['dedup']['threads'],
-        mem_mb = lambda wildcards, attempt: attempt * resources['dedup']['mem']
+        mem_mb = lambda wildcards, attempt: attempt * resources['dedup']['threads'] * 4000
     log:
         "logs/{ref_name}/sambamba_dedup/{sample}.txt"
     benchmark:

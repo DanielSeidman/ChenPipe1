@@ -15,7 +15,7 @@ rule genmap:
     conda:
         "../envs/mappability.yml"
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * resources['genmap']['mem']
+        mem_mb = lambda wildcards, attempt: attempt * resources['genmap']['threads'] * 4000
     threads:
         resources['genmap']['threads'] 
     shell:
@@ -37,7 +37,7 @@ rule mappability_bed:
     benchmark:
         "benchmarks/{ref_name}/mapbed/{prefix}_benchmark.txt"
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * resources['callable_bed']['mem']
+        mem_mb = lambda wildcards, attempt: attempt * resources['callable_bed']['threads'] * 4000
     params:
         merge = config['mappability_merge'],
         mappability = config['mappability_min']

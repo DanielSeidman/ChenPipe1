@@ -13,7 +13,7 @@ rule compute_d4:
     benchmark:
         "benchmarks/{ref_name}/compute_d4/{sample}.txt"
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * resources['compute_d4']['mem']
+        mem_mb = lambda wildcards, attempt: attempt * resources['compute_d4']['threads'] * 4000
     threads:
         resources['compute_d4']['threads']
     params:
@@ -33,7 +33,7 @@ rule merge_d4:
     benchmark:
         "benchmarks/merge_d4/benchmark.txt"
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * resources['merge_d4']['mem']
+        mem_mb = lambda wildcards, attempt: attempt * resources['merge_d4']['threads'] * 4000
     shell:
         "d4tools merge {input.d4files} {output} &> {log}"
 
@@ -79,7 +79,7 @@ rule callable_bed:
     benchmark:
         "benchmarks/{ref_name}/callable_bed/{prefix}_benchmark.txt"
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * resources['callable_bed']['mem']
+        mem_mb = lambda wildcards, attempt: attempt * resources['callable_bed']['threads'] * 4000
     params:
         merge = config['cov_merge']
     shell:

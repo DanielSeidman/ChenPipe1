@@ -17,8 +17,8 @@ rule bam2gvcf:
     resources:
         #!The -Xmx value the tool is run with should be less than the total amount of physical memory available by at least a few GB
         # subtract that memory here
-        mem_mb = lambda wildcards, attempt: attempt * resources['bam2gvcf']['mem'],   # this is the overall memory requested
-        reduced = lambda wildcards, attempt: attempt * (resources['bam2gvcf']['mem'] - 3000)  # this is the maximum amount given to java
+        mem_mb = lambda wildcards, attempt: attempt * resources['bam2gvcf']['threads'] * 4000,   # this is the overall memory requested
+        reduced = lambda wildcards, attempt: attempt * (() - 3000)  # this is the maximum amount given to java
     log:
         "logs/{ref_name}/gatk_hc/{sample}/{l}.txt"
     benchmark:
@@ -52,7 +52,7 @@ rule concat_gvcfs:
     benchmark:
         "benchmarks/{ref_name}/concat_gvcfs/{sample}.txt"
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * resources['gatherVcfs']['mem'],   # this is the overall memory requested
+        mem_mb = lambda wildcards, attempt: attempt * resources['gatherVcfs']['threads'] * 4000,   # this is the overall memory requested
         tmpdir = get_big_temp
     conda:
         "../envs/bcftools.yml"
@@ -88,8 +88,8 @@ rule gvcf2DB:
         db = temp(directory("results/{ref_name}/genomics_db_import/DB_L{l}")),
         tar = temp("results/{ref_name}/genomics_db_import/DB_L{l}.tar"),
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * resources['gvcf2DB']['mem'],   # this is the overall memory requested
-        reduced = lambda wildcards, attempt: int(attempt * resources['gvcf2DB']['mem'] * 0.80) # this is the maximum amount given to java
+        mem_mb = lambda wildcards, attempt: attempt * resources['gvcf2DB']['threads'] * 4000,   # this is the overall memory requested
+        reduced = lambda wildcards, attempt: int(attempt * resources['gvcf2DB']['threads'] * 4000 * 0.80) # this is the maximum amount given to java
     log:
         "logs/{ref_name}/gatk_db_import/{l}.txt"
     resources:
@@ -135,8 +135,8 @@ rule DB2vcf:
 
 
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * resources['DB2vcf']['mem'],   # this is the overall memory requested
-        reduced = lambda wildcards, attempt: attempt * (resources['DB2vcf']['mem'] - 3000),  # this is the maximum amount given to java
+        mem_mb = lambda wildcards, attempt: attempt * resources['DB2vcf']['threads'] * 4000,   # this is the overall memory requested
+        reduced = lambda wildcards, attempt: attempt * ((resources['DB2vcf']['threads'] * 4000) - 3000),  # this is the maximum amount given to java
         tmpdir = get_big_temp
     log:
         "logs/{ref_name}/gatk_genotype_gvcfs/{l}.txt"
@@ -173,7 +173,7 @@ rule filterVcfs:
     conda:
         "../envs/bam2vcf.yml"
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * resources['filterVcfs']['mem']   # this is the overall memory requested
+        mem_mb = lambda wildcards, attempt: attempt * resources['filterVcfs']['threads'] * 4000   # this is the overall memory requested
     log:
         "logs/{ref_name}/gatk_filter/{l}.txt"
     benchmark:
@@ -208,7 +208,7 @@ rule sort_gatherVcfs:
     benchmark:
         "benchmarks/{ref_name}/sort_gather_vcfs/{prefix}_benchmark.txt"
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * resources['gatherVcfs']['mem'],   # this is the overall memory requested
+        mem_mb = lambda wildcards, attempt: attempt * resources['gatherVcfs']['threads'] * 4000,   # this is the overall memory requested
         tmpdir = get_big_temp
     shell:
         """

@@ -14,7 +14,7 @@ rule picard_intervals:
     benchmark:
         "benchmarks/{ref_name}/picard_intervals/benchmark.txt"
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * resources['process_ref']['mem']
+        mem_mb = lambda wildcards, attempt: attempt * resources['process_ref']['threads'] * 4000
     shell:
         "picard ScatterIntervalsByNs REFERENCE={input.ref} OUTPUT={output.intervals} MAX_TO_MERGE={params.minNmer} OUTPUT_TYPE=ACGT &> {log}\n"
 
@@ -49,7 +49,7 @@ checkpoint create_db_intervals:
     benchmark:
         "benchmarks/{ref_name}/db_intervals/benchmark.txt"
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * resources['create_db_intervals']['mem']
+        mem_mb = lambda wildcards, attempt: attempt * resources['create_db_intervals']['threads'] * 4000
     conda:
         '../envs/bam2vcf.yml'
     shell:
@@ -77,7 +77,7 @@ checkpoint create_gvcf_intervals:
     benchmark:
         "benchmarks/{ref_name}/gvcf_intervals/benchmark.txt"
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * resources['create_gvcf_intervals']['mem']
+        mem_mb = lambda wildcards, attempt: attempt * resources['create_gvcf_intervals']['threads'] * 4000
     conda:
         '../envs/bam2vcf.yml'
     shell:

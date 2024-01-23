@@ -18,7 +18,7 @@ rule sentieon_map:
     benchmark:
         "benchmarks/{ref_name}/sentieon_map/{sample}/{run}.txt"
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * resources['sentieon_map']['mem'],
+        mem_mb = lambda wildcards, attempt: attempt * resources['sentieon_map']['threads'] * 4000,
         machine_type = resources['sentieon_map']['machine_type']
     shell:
         """
@@ -40,7 +40,7 @@ rule merge_bams:
     benchmark:
         "benchmarks/{ref_name}/merge_bams/{sample}.txt"
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * resources['merge_bams']['mem']
+        mem_mb = lambda wildcards, attempt: attempt * resources['merge_bams']['threads'] * 4000
     shell:
         "samtools merge {output.bam} {input} && samtools index {output.bam}"
 
@@ -63,7 +63,7 @@ rule sentieon_dedup:
     threads: 
         resources['sentieon_dedup']['threads']
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * resources['sentieon_dedup']['mem'],
+        mem_mb = lambda wildcards, attempt: attempt * resources['sentieon_dedup']['threads'] * 4000,
         machine_type = resources['sentieon_dedup']['machine_type']
     shell:
         """
@@ -87,7 +87,7 @@ rule sentieon_haplotyper:
         gvcf_idx = "results/gvcfs/{sample}.g.vcf.gz.tbi",
     threads: resources['sentieon_haplotyper']['threads']
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * resources['sentieon_haplotyper']['mem'],
+        mem_mb = lambda wildcards, attempt: attempt * resources['sentieon_haplotyper']['threads'] * 4000,
         machine_type = resources['sentieon_haplotyper']['machine_type']
     conda:
         "../envs/sentieon.yml"
@@ -115,7 +115,7 @@ rule sentieon_combine_gvcf:
         lic = config['sentieon_lic']
     threads: resources['sentieon_combine_gvcf']['threads']
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * resources['sentieon_combine_gvcf']['mem'],
+        mem_mb = lambda wildcards, attempt: attempt * resources['sentieon_combine_gvcf']['threads'] * 4000,
         machine_type = resources['sentieon_combine_gvcf']['machine_type'],
         disk_mb = resources['sentieon_combine_gvcf']['disk_mb']
     conda:
@@ -146,7 +146,7 @@ rule filter_vcf:
     conda:
         "../envs/bam2vcf.yml"
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * resources['filterVcfs']['mem'],   # this is the overall memory requested
+        mem_mb = lambda wildcards, attempt: attempt * resources['filterVcfs']['threads'] * 4000,   # this is the overall memory requested
     log:
         "logs/{ref_name}/sentieon_combine_gvcf/{prefix}_log.txt"
     benchmark:

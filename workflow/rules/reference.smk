@@ -8,7 +8,7 @@ rule index_reference:
     conda:
         "../envs/fastq2bam.yml"
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * resources['index_ref']['mem']
+        mem_mb = lambda wildcards, attempt: attempt * resources['index_ref']['threads'] * 4000
     log:
         "logs/{ref_name}/index_ref/log.txt"
     benchmark:
