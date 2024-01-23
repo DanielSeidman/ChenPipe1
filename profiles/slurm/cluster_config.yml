@@ -1,6 +1,6 @@
 __default__:
     partition: "RM-shared"
-    time: 8:00:00
+    time: 8
     nodes: 1
     output: "logs/slurm/slurm-%j.out"
     ntasks-per-node: 2
