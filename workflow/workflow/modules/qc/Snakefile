@@ -1,0 +1,199 @@
+import pandas as pd
+import os
+include: "common.smk"
+
+configfile: "config/config.yaml"
+
+samples = pd.read_table(config["samples"], sep=",", dtype=str).replace(' ', '_', regex=True)
+
+
+rule all:
+    input:
+        expand("results/{ref_name}/QC/{prefix}_qc.html", ref_name=config['ref_name'], prefix=config['final_prefix'])
+
+rule check_fai:
+    """
+    checks fai file for numeric first column, then do not run plink and rest of workflow if they are all numeric
+    """
+    input:
+        vcf = "results/{ref_name}/{prefix}_raw.vcf.gz",
+        fai = "results/{ref_name}/data/genome/{ref_name}.fasta.fai",
+    output:
+        faiResult = "results/QC/{prefix}_fai_tmp.txt"
+    run:
+        check_contig_names(input.fai, output.faiResult)
+
+rule vcftools_individuals:
+    input:
+        vcf = "results/{ref_name}/{prefix}_raw.vcf.gz"
+    output:
+        depth = "results/{ref_name}/QC/{prefix}.idepth",
+        miss = "results/{ref_name}/QC/{prefix}.imiss",
+        samps = "results/{ref_name}/QC/{prefix}.samps.txt",
+        summ = "results/{ref_name}/QC/{prefix}.FILTER.summary",
+        het = "results/{ref_name}/QC/{prefix}.het"
+    conda:
+        "envs/vcftools_individuals.yml"
+    params:
+        prefix = lambda wc, input: os.path.join(input.vcf.rsplit("/", 1)[0], "QC", wc.prefix),
+        min_depth = config["min_depth"]
+    shell:
+        """
+        vcftools --gzvcf {input.vcf} --FILTER-summary --out {params.prefix}
+        vcftools --gzvcf {input.vcf} --out {params.prefix} --depth
+        vcftools --gzvcf {input.vcf} --out {params.prefix} --het
+        vcftools --gzvcf {input.vcf} --out {params.prefix} --missing-indv
+        tail -n +2 {output.depth} | awk '$3>{params.min_depth} {{print $1}}'> {output.samps}
+        """
+
+rule subsample_snps:
+    input:
+        vcf = "results/{ref_name}/{prefix}_raw.vcf.gz",
+        samps = "results/{ref_name}/QC/{prefix}.samps.txt",
+        fai = "results/{ref_name}/data/genome/{ref_name}.fasta.fai",
+        sumstats = "results/{ref_name}/summary_stats/{prefix}_bam_sumstats.txt"
+    output:
+        filtered = temp("results/{ref_name}/QC/{prefix}_filtered.vcf.gz"),
+        filtered_idx = temp("results/{ref_name}/QC/{prefix}_filtered.vcf.gz.csi"),
+        pruned = "results/{ref_name}/QC/{prefix}.pruned.vcf.gz",
+        snpqc = "results/{ref_name}/QC/{prefix}_snpqc.txt",
+        fai = "results/{ref_name}/QC/{prefix}.fasta.fai",
+        sumstats = "results/{ref_name}/QC/{prefix}_bam_sumstats.txt"
+    conda:
+        "envs/subsample_snps.yml"
+    params:
+        chr_ex = config["scaffolds_to_exclude"]
+    shell:
+        """
+        ##first remove filtered sites and retain only biallelic SNPs
+        ##Also remove sites with MAF < 0.01 and those with > 75% missing data
+        if [ -z "{params.chr_ex}" ]
+        then
+            bcftools view -S {input.samps} -v snps -m2 -M2 -f .,PASS -e 'AF==1 | AF==0 | AF<0.01 | ALT="*" | F_MISSING > 0.75 | TYPE~"indel" | ref="N"' {input.vcf} -O z -o {output.filtered}
+        else
+            bcftools view -S {input.samps} -t ^{params.chr_ex} -v snps -m2 -M2 -f .,PASS -e 'AF==1 | AF==0 | AF<0.01 | ALT="*" | F_MISSING > 0.75 | TYPE~"indel" | ref="N"' {input.vcf} -O z -o {output.filtered}
+        fi
+        bcftools index {output.filtered}
+
+        #figure out how many SNPs are left, then identify how big of SNP window size to get down to between 100 and 150k snps        
+        ALLSITES=`bcftools query -f '%CHROM\t%POS\n' {output.filtered} | wc -l`
+        SITES=`echo $(( ${{ALLSITES}} / 100000 ))`
+
+        #if the top VCF has < 150k SNPs, then just take all the SNPs
+        if [[ $SITES -gt 1 ]]
+        then
+            bcftools +prune -w $SITES -n 1 -N rand -O z -o {output.pruned} {output.filtered}
+        else
+            bcftools view -O z -o {output.pruned} {output.filtered}
+        fi
+
+        bcftools query -f '%CHROM\t%POS\t%ID\t%INFO/AF\t%QUAL\t%INFO/ReadPosRankSum\t%INFO/FS\t%INFO/SOR\t%INFO/MQ\t%INFO/MQRankSum\n' {output.pruned} > {output.snpqc}
+        
+        ##copy the fai file into the QC folder for easy access
+        cp {input.fai} {output.fai}
+        cp {input.sumstats} {output.sumstats}
+        """
+
+rule plink:
+    """
+    Call plink PCA.
+    """
+    input:
+        vcf = "results/{ref_name}/QC/{prefix}.pruned.vcf.gz",
+        faiResult = "results/{ref_name}/QC/{prefix}_fai_tmp.txt"
+    params:
+        prefix = lambda wc, input: input.vcf.replace(".pruned.vcf.gz", "")
+    output: 
+        bed = "results/{ref_name}/QC/{prefix}.bed",
+        bim = "results/{ref_name}/QC/{prefix}.bim",
+        fam = "results/{ref_name}/QC/{prefix}.fam",
+        eigenvec = "results/{ref_name}/QC/{prefix}.eigenvec",
+        eigenval = "results/{ref_name}/QC/{prefix}.eigenval",
+        dist = "results/{ref_name}/QC/{prefix}.dist",
+        distid = "results/{ref_name}/QC/{prefix}.dist.id",
+        king = "results/{ref_name}/QC/{prefix}.king"
+    conda:
+        "envs/plink.yml"
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 2000
+    shell:
+        #plink 2 for king relatedness matrix (robust to structure) and plink 1.9 for distance matrix
+        """
+        plink2 --vcf {input.vcf} --pca 10 --out {params.prefix} --allow-extra-chr --autosome-num 95 --make-bed --make-king square --const-fid --bad-freqs
+        plink --vcf {input.vcf} --out {params.prefix} --allow-extra-chr --autosome-num 95 --distance square --const-fid
+        """
+
+rule admixture:
+    """
+    Call Admixture. First, make a bim file that has no charecters in the chromosomes
+    """
+    input:
+        bed = "results/{ref_name}/QC/{prefix}.bed",
+        bim = "results/{ref_name}/QC/{prefix}.bim",
+        fam = "results/{ref_name}/QC/{prefix}.fam",
+    output:
+        admix = "results/{ref_name}/QC/{prefix}.3.Q",
+        admix2 = "results/{ref_name}/QC/{prefix}.2.Q"
+    params:
+        outdir = lambda wc, input: input.bed.rsplit("/", 1)[0]
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 4000
+    conda:
+        "envs/admixture.yml"
+    shell:
+        """
+        mv {input.bim} {input.bim}.orig
+        paste <(cut -f 1 {input.bim}.orig | sed 's/[^0-9]//g') <(cut -f 2,3,4,5,6 {input.bim}.orig) >  {input.bim}
+
+        admixture {input.bed} 2
+        admixture {input.bed} 3
+
+        mv "{wildcards.prefix}".2.* {params.outdir}
+        mv "{wildcards.prefix}".3.* {params.outdir}
+        """
+
+rule generate_coords_file:
+    output: 
+        "results/{ref_name}/QC/{prefix}.coords.txt"
+    run:
+        out_df = samples.loc[(samples['refGenome'] == wildcards.refGenome)][["BioSample", "long", "lat"]]
+        out_df.drop_duplicates("BioSample", inplace=True)
+        out_df.dropna(subset=["long", "lat"], thresh=1, inplace=True)
+        out_df.to_csv(output[0], index=False, sep="\t", header=False)
+
+rule qc_plots:
+    """
+    Call plotting script
+    """
+    input:
+        eigenvec = "results/{ref_name}/QC/{prefix}.eigenvec",
+        eigenval = "results/{ref_name}/QC/{prefix}.eigenval",
+        depth = "results/{ref_name}/QC/{prefix}.idepth",
+        dist = "results/{ref_name}/QC/{prefix}.dist",
+        distid = "results/{ref_name}/QC/{prefix}.dist.id",
+        king = "results/{ref_name}/QC/{prefix}.king",
+        miss = "results/{ref_name}/QC/{prefix}.imiss",
+        admix3 = "results/{ref_name}/QC/{prefix}.3.Q",
+        admix2 = "results/{ref_name}/QC/{prefix}.2.Q",
+        snpqc = "results/{ref_name}/QC/{prefix}_snpqc.txt",
+        faiResult = "results/{ref_name}/QC/{prefix}_fai_tmp.txt",
+        bed = "results/{ref_name}/QC/{prefix}.bed",
+        bim = "results/{ref_name}/QC/{prefix}.bim",
+        fam = "results/{ref_name}/QC/{prefix}.fam",
+        sumstats = "results/{ref_name}/QC/{prefix}_bam_sumstats.txt",
+        summ = "results/{ref_name}/QC/{prefix}.FILTER.summary",
+        het = "results/{ref_name}/QC/{prefix}.het",
+        fai = "results/{ref_name}/QC/{prefix}.fasta.fai",
+        coords = get_coords_if_available
+    params:
+        prefix = lambda wc, input: input.het[:-4],
+        nClusters = config['nClusters'],
+        GMKey = config['GoogleAPIKey']
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 2000
+    output: 
+        qcpdf = "results/{ref_name}/QC/{prefix}_qc.html"
+    conda:
+        "envs/qc.yml"
+    script:
+        "scripts/qc_dashboard_render.R"

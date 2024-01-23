@@ -1,0 +1,124 @@
+###
+# fastq2bam rules
+##
+
+# fastq download
+get_fastq_pe:
+  threads: 1
+
+trim_galore_call:
+  threads: 1
+
+# index reference
+index_ref:
+  threads: 3
+
+# fastp program
+fastp:
+  threads: 8
+ 
+
+# bwa mapping
+bwa_map:
+  threads: 31
+  
+  # sort bam with picard's SortSam tool
+sort_bam:
+    threads: 4
+    
+
+#merge bams
+merge_bams:
+    
+    threads: 2
+
+# mark duplicates with picard's MarkDuplicates
+dedup:
+  threads: 31
+  
+# calculate BAM summaries with samtools and picard
+bam_sumstats:
+  threads: 2
+merge_bams:
+  threads: 2
+bedtools:
+  threads: 1
+
+# Sentieon tools
+sentieon_map:
+  machine_type: "n2d-standard-32"
+  threads: 31
+  
+
+sentieon_dedup:
+  machine_type: "n2d-standard-32"
+  threads: 31
+  
+
+sentieon_haplotyper:
+  machine_type: "n2d-standard-32"
+  threads: 31
+  
+
+sentieon_combine_gvcf:
+  machine_type: "n2d-standard-32"
+  threads: 31
+  disk_mb: 2000000
+
+###
+# Intervals workflow
+###
+
+# preprocess genome, create intervals
+# picard's create CreateSequenceDictionary, samtools faidx
+process_ref:
+  threads: 4
+# custom python algo to create intervals
+create_db_intervals:
+  threads: 2
+
+create_gvcf_intervals:
+  threads: 2
+
+## Callable sites workflow
+
+# genmap map
+genmap:
+  threads: 10
+  
+genmap_sort:
+  threads: 1
+compute_d4:
+  threads: 4
+merge_d4:
+  threads: 3
+callable_bed:
+  threads: 3
+
+###
+# bam2vcf workflows
+###
+
+# gatk HaplotypeCaller
+bam2gvcf:
+  threads: 3
+# gatk GenomicsDBImport
+gvcf2DB:
+  tgreads: 8
+# gatk GenotypeGVCFs
+DB2vcf:
+  threads: 8
+# gatk filterVcfs
+filterVcfs:
+  threads: 1
+# gatk GatherVcfs
+gatherVcfs:
+  threads: 3
+# vcftools program
+vcftools:
+  threads: 2
+# plink
+plink:
+  threads: 5
+admixture:
+  threads: 1

@@ -1,0 +1,134 @@
+import pandas as pd
+import os
+configfile: "config/config.yaml"
+
+samples = pd.read_table(config["samples"], sep=",", dtype=str).replace(' ', '_', regex=True)
+
+
+rule all:
+    input:
+        expand("results/{ref_name}/{prefix}_filtered.vcf.gz", ref_name=config['ref_name'], prefix=config['final_prefix']),
+        expand("results/{ref_name}/{prefix}_clean_snps.vcf.gz", ref_name=config['ref_name'], prefix=config['final_prefix']),
+        expand("results/{ref_name}/{prefix}_clean_indels.vcf.gz", ref_name=config['ref_name'], prefix=config['final_prefix'])
+
+rule filter_individuals:
+    """
+    make list of individuals to exclude based on sampleType column
+    """
+    output:
+        include = "results/{ref_name}/postprocess/{prefix}_samps.txt",
+    run:
+        out_df = samples[["BioSample", "SampleType"]]
+        out_df.drop_duplicates("BioSample", inplace=True)
+        include =out_df[~out_df.SampleType.isin(["exclude"])].BioSample
+        include_clean = include.dropna()
+        include_clean.to_csv(output[0], index=False, sep="\t", header=False)
+
+rule basic_filter:
+    """
+    Filters a vcf file to remove samples marked exclude, sites that don't pass filters,
+    sites with reference equal to N or alt equal to ., and sites with AF == 0.
+    """
+    input: 
+        vcf = "results/{ref_name}/{prefix}_raw.vcf.gz",
+        include = "results/{ref_name}/postprocess/{prefix}_samps.txt"
+    output:
+        filtered = "results/{ref_name}/{prefix}_filtered.vcf.gz",
+        filtered_idx = "results/{ref_name}/{prefix}_filtered.vcf.gz.csi"
+    conda:
+        "envs/filter.yml"
+    shell:
+        """
+        bcftools view -S {input.include} -f .,PASS {input.vcf} -a -U -O u | bcftools +fill-tags -Ou |
+        bcftools view -m2 -e 'AF==0 | ref="N" | ALT="."' -O z -o {output.filtered}
+        bcftools index {output.filtered}
+        """
+
+rule update_bed:
+    """
+    Updates callable sites bed file to add contigs less than threshold to regions to exclude
+    """
+    input:
+        bed = "results/{ref_name}/{prefix}_callable_sites.bed",
+        fai = "results/{ref_name}/data/genome/{ref_name}.fasta.fai"
+    output:
+        bed = "results/{ref_name}/postprocess/{prefix}_exclude_sites.bed",
+        tmp_bed = temp("results/{ref_name}/postprocess/{prefix}_tmp.bed")
+    conda:
+        "envs/bed.yml"
+    params:
+        size_filter = config["contig_size"],
+    shell:
+        """
+        awk 'BEGIN{{OFS="\\t"}}{{if ($2<{params.size_filter}) {{print $1,0,$2}}}}' {input.fai} > {output.tmp_bed}
+        cat {output.tmp_bed} {input.bed} | bedtools sort -i - | bedtools merge -i - > {output.bed}
+        """
+
+rule strict_filter:  
+    input: 
+        bed = "results/postprocess/{prefix}_exclude_sites.bed",
+        vcf = "results/{prefix}_filtered.vcf.gz",
+        filtered_idx = "results/{prefix}_filtered.vcf.gz.csi"
+    output: 
+        vcf = temp("results/postprocess/{prefix}_filtered.TEMP.vcf.gz"),
+        idx = temp("results/postprocess/{prefix}_filtered.TEMP.vcf.gz.csi")
+    conda:
+        "envs/filter.yml"
+    params:
+        miss = config["missingness"],
+        maf = config["maf"],
+        chr_ex = config["scaffolds_to_exclude"]
+    shell:
+        """
+        if [ -z "{params.chr_ex}" ]
+        then
+            bcftools view -R {input.bed} -m2 -M2 \
+            -e 'F_MISSING > {params.miss} | AF<{params.maf}' \
+            {input.vcf} -O u -o {output.vcf}
+        else
+            bcftools view -t ^{params.chr_ex} -R {input.bed} -m2 -M2 \
+            -e 'F_MISSING > {params.miss} | AF<{params.maf}' \
+            {input.vcf} -O u -o {output.vcf} 
+        fi
+        bcftools index {output.vcf}
+        """
+
+rule subset_indels:
+    """
+    Produce a clean vcf with only indels variants.
+    """
+    input: 
+        vcf = "results/postprocess/{prefix}_filtered.TEMP.vcf.gz",
+        idx = "results/postprocess/{prefix}_filtered.TEMP.vcf.gz.csi",
+    output: 
+        vcf = "results/{ref_name}/{prefix}_clean_indels.vcf.gz",
+        idx = "results/{ref_name}/{prefix}_clean_indels.vcf.gz.tbi"
+    conda:
+        "envs/filter.yml"
+    log:
+        "logs/{ref_name}/postprocess/{prefix}_subset_indels.txt"
+    shell:
+        """
+        bcftools view -v indels -O z -o {output.vcf} {input.vcf}
+        bcftools index -t {output.vcf}
+        """
+
+rule subset_snps:
+    """
+    Produce a clean vcf with only simple snps.
+    """
+    input: 
+        vcf = "results/{ref_name}/postprocess/{prefix}_filtered.TEMP.vcf.gz",
+        idx = "results/{ref_name}/postprocess/{prefix}_filtered.TEMP.vcf.gz.csi"
+    output: 
+        vcf = "results/{ref_name}/{prefix}_clean_snps.vcf.gz",
+        idx = "results/{ref_name}/{prefix}_clean_snps.vcf.gz.tbi"
+    conda:
+        "envs/filter.yml"    
+    log:
+        "logs/{ref_name}/postprocess/{prefix}_subset_snps.txt"
+    shell:
+        """
+        bcftools view -v snps -e 'TYPE ~ "indel"' -O z -o {output.vcf} {input.vcf}
+        bcftools index -t {output.vcf}
+        """
