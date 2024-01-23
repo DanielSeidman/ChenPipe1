@@ -129,6 +129,7 @@ def submit_job(jobscript, **sbatch_options):
         res = subprocess.check_output(["sbatch"] + optsbatch_options + [jobscript])
         print("res: ",res)##Debugging
     except subprocess.CalledProcessError as e:
+        print("res error: ",e)
         raise e
     # Get jobid
     res = res.decode()
