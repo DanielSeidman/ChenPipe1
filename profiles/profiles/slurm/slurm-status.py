@@ -11,7 +11,7 @@ logger = logging.getLogger("__name__")
 STATUS_ATTEMPTS = 20
 
 jobid = sys.argv[1]
-
+print("sys.argv: ",sys.argv)
 for i in range(STATUS_ATTEMPTS):
     try:
         sacct_res = sp.check_output(shlex.split("sacct -P -b -j {} -n".format(jobid)))
