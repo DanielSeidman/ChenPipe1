@@ -9,7 +9,7 @@ import logging
 logger = logging.getLogger("__name__")
 
 STATUS_ATTEMPTS = 20
-
+print("sys.argv: ",sys.argv)
 jobid = sys.argv[1]
 
 for i in range(STATUS_ATTEMPTS):
