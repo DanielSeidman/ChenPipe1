@@ -149,9 +149,10 @@ def get_read_group(wc):
     """Denote sample name and library_id in read group."""
     tokens=wc.run.split("_")
     ##libname = samples.loc[samples['Run'] == wc.run]["LibraryName"].tolist()[0]
-    return r"'@RG\tID:{tokens[2]}_{tokens[3]}\tSM:{tokens[0]}\tLB:{tokens[1]}\tPL:ILLUMINA'".format(
-        sample=wc.sample,
-        lib=libname
+    return r"'@RG\tID:{id_string}\tSM:{sm_string}\tLB:{lb_string}\tPL:ILLUMINA'".format(
+        id_string="tokens[2]}_{tokens[3]",
+        sm_string="tokens[0]",
+        lb_string="tokens[1]"
     )
 
 def get_input_sumstats(wildcards):
