@@ -4,11 +4,9 @@
 
 printf "BioSample,Run,fq1,fq2\n" > ${2};
 for pathval in $(cat ${1});
-  do ls $pathval/*1.fq.gz | awk 'BEGIN
-                                {
+  do ls $pathval/*1.fq.gz | awk 'BEGIN{
                                   OFS=","
-                                }
-                                {
+                                }{
                                   dir_n=split($1,directories,"/");
                                   token_n=split(directories[dir_n],tokens,"_");
                                   split($1,no_suffix,"1.fq.gz");
