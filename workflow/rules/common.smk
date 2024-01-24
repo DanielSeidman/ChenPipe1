@@ -41,7 +41,7 @@ def get_output():
     return out
 
 def merge_bams_input(wc):
-    return expand("results/{ref_name}/bams/preMerge/{{sample}}/{run}.bam", run=samples.loc[samples['BioSample'] == wc.sample]['Run'].tolist())
+    return expand("results/{ref_name}/bams/preMerge/{{sample}}/{run}.bam", run=samples.loc[samples['BioSample'] == wc.sample]['Run'].tolist(),ref_name=config['ref_name'])
 
 
         
