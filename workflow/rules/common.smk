@@ -147,8 +147,9 @@ def collect_fastp_stats_input(wc):
 
 def get_read_group(wc):
     """Denote sample name and library_id in read group."""
-    libname = samples.loc[samples['Run'] == wc.run]["LibraryName"].tolist()[0]
-    return r"'@RG\tID:{lib}\tSM:{sample}\tLB:{lib}\tPL:ILLUMINA'".format(
+    tokens=wc.run.split("_")
+    ##libname = samples.loc[samples['Run'] == wc.run]["LibraryName"].tolist()[0]
+    return r"'@RG\tID:{tokens[2]}_{tokens[3]}\tSM:{tokens[0]}\tLB:{tokens[1]}\tPL:ILLUMINA'".format(
         sample=wc.sample,
         lib=libname
     )

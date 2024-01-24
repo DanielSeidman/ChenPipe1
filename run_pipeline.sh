@@ -4,8 +4,8 @@
 #SBATCH -e err
 #SBATCH -p RM-shared
 #SBATCH -n 1
-#SBATCH -t 00:30:00
-#SBATCH --ntasks-per-node=128
+#SBATCH -t 08:00:00
+
 
 CONDA_BASE=$(conda info --base)
 source $CONDA_BASE/etc/profile.d/conda.sh
