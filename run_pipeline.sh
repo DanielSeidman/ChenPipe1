@@ -4,12 +4,12 @@
 #SBATCH -e err
 #SBATCH -p RM-shared
 #SBATCH -n 1
-#SBATCH -t 08:00:00
+#SBATCH -t 48:00:00
 
-
+module load anaconda3
 CONDA_BASE=$(conda info --base)
 source $CONDA_BASE/etc/profile.d/conda.sh
-conda activate snparcher
+conda activate innersnp
 umask u=rwx,g=rwx,o=rx
-snakemake --snakefile workflow/Snakefile --profile ./profiles/slurm
+snakemake --snakefile workflow/Snakefile --profile ./profiles/slurm 
 
