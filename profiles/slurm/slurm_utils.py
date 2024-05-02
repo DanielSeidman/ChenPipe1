@@ -4,7 +4,7 @@ import re
 import math
 import argparse
 import subprocess
-
+import sys
 from snakemake import io
 from snakemake.io import Wildcards
 from snakemake.utils import SequenceFormatter, AlwaysQuotedFormatter, QuotedFormatter
@@ -102,13 +102,15 @@ def format_values(dictionary, job_properties):
     return formatted
     
 def convert_job_properties(job_properties, resource_mapping={}):
+    #print(job_properties)
     options = {}
     resources = job_properties.get("resources", {})
+    #print("debuginfo:"+str(resources), file=sys.stderr)
     for k, v in resource_mapping.items():
         options.update({k: resources[i] for i in v if i in resources})
-
     if "threads" in job_properties:
-        options["cpus-per-task"] = job_properties["threads"]
+        options["ntasks"] = job_properties["threads"]
+    #print("debuginfo:"+str(options), file=sys.stderr)
     return options
 
 
@@ -127,7 +129,7 @@ def submit_job(jobscript, **sbatch_options):
     optsbatch_options = [f"--{k}={v}" for k, v in sbatch_options.items()]
     try:
         res = subprocess.check_output(["sbatch"] + optsbatch_options + [jobscript])
-        #print("res: ", res)  ##Debugging
+        #print("opts: ", optsbatch_options)  ##Debugging
     except subprocess.CalledProcessError as e:
         raise e
     # Get jobid
@@ -146,7 +148,7 @@ def advanced_argument_conversion(arg_dict):
 
     partition = arg_dict.get("partition", None) or _get_default_partition()
     constraint = arg_dict.get("constraint", None)
-    ncpus = int(arg_dict.get("cpus-per-task", 1))
+    ncpus = int(arg_dict.get("ntasks", 1))
     nodes = int(arg_dict.get("nodes", 1))
     mem = arg_dict.get("mem", None)
     # Determine partition with features. If no constraints have been set,
@@ -168,14 +170,14 @@ def advanced_argument_conversion(arg_dict):
             adjusted_args["mem"] = min(int(mem), MEMORY_PER_PARTITION)
             AVAILABLE_MEM = ncpus * MEMORY_PER_CPU
             if adjusted_args["mem"] > AVAILABLE_MEM:
-                adjusted_args["cpus-per-task"] = int(
+                adjusted_args["ntasks"] = int(
                     math.ceil(int(mem) / MEMORY_PER_CPU)
                 )
-        adjusted_args["cpus-per-task"] = min(int(config["cpus"]), ncpus)
+        adjusted_args["ntasks"] = min(int(config["cpus"]), ncpus)
     else:
         if nodes == 1:
             # Allocate at least as many tasks as requested nodes
-            adjusted_args["cpus-per-task"] = nodes
+            adjusted_args["ntasks"] = nodes
     # Update time. If requested time is larger than maximum allowed time, reset
     try:
         if "time" in arg_dict:

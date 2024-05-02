@@ -2,11 +2,11 @@
 # Variables you need to change
 ##############################
 
-samples: "config/samples.csv" # path to the sample metadata CSV
-ref_path: "config/FSJ.v3_final.fasta" # path to the reference. Must be in config/
-ref_name: "FSJ.v3_final" # name of the reference file without file extensions
+samples: "config/first_100_lowsamples.csv" # path to the sample metadata CSV #set by FR, 4/8/2024
+ref_path: "config/AphCoe_V3_internal_Mar2024.fasta" # path to the reference. Must be in config/ #set by FR, 3/8/2024
+ref_name: "AphCoe_V3_internal_Mar2024" # name of the reference file without file extensions #set by FR, 3/8/2024
 resource_config: "config/resources.yaml" # path to resources yaml config
-final_prefix: "test2" # prefix for final output files
+final_prefix: "first_100_samples-04292024" # prefix for final output files #set by FR, 4/8/2024
 intervals: False #Set to True if you want to perform variant calling using interval approach.
 sentieon: False #set to True if you want to use sentieon, False if you want GATK
 sentieon_lic: "" #set to path of sentieon license
@@ -16,7 +16,7 @@ bigtmp: "" #Set to a path with lots of free space to use for commands that requi
 cov_filter: False #set to True if you want to include coverage thresholds in the callable sites bed file (default uses mappability only)
 generate_trackhub: True #Set to true if you want to generate a Genome Browser Trackhub. Dependent on postprocessing module.
 trackhub_email: ""
-scaffolds_to_exclude: "mtDNA,Y" #comma separated, no spaces list of scaffolds to exclude from final clean vcfs. Set to blank to disable.
+scaffolds_to_exclude: "ChrW_unlocalized_scaffold_1,ChrW_unlocalized_scaffold_2,ChrW_unlocalized_scaffold_3,ChrW_unlocalized_scaffold_4" #comma separated, no spaces list of scaffolds to exclude from final clean vcfs. Set to blank to disable. #set by FR, 3/8/2024
 
 ##############################
 # Variables you *might* need to change

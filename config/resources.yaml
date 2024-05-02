@@ -16,11 +16,14 @@ index_ref:
 # fastp program
 fastp:
   threads: 8
- 
+
+# gatk HaplotypeCaller
+bam2gvcf:
+  threads: 6 
 
 # bwa mapping
 bwa_map:
-  threads: 31
+  threads: 12
   
   # sort bam with picard's SortSam tool
 sort_bam:
@@ -34,7 +37,7 @@ merge_bams:
 
 # mark duplicates with picard's MarkDuplicates
 dedup:
-  threads: 31
+  threads: 12
   
 # calculate BAM summaries with samtools and picard
 bam_sumstats:
@@ -99,12 +102,9 @@ callable_bed:
 # bam2vcf workflows
 ###
 
-# gatk HaplotypeCaller
-bam2gvcf:
-  threads: 3
 # gatk GenomicsDBImport
 gvcf2DB:
-  tgreads: 8
+  threads: 8
 # gatk GenotypeGVCFs
 DB2vcf:
   threads: 8
