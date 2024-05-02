@@ -1,23 +1,19 @@
 rule genmap:
     input:
-        ref = "config/{ref_name}.fasta",
+        ref = "results/{refGenome}/data/genome/{refGenome}.fna",
     output:
-        bg = temp("results/{ref_name}/genmap/{ref_name}.genmap.bedgraph"),
-        sorted_bg = "results/{ref_name}/genmap/sorted_mappability.bg"
+        bg = temp("results/{refGenome}/genmap/{refGenome}.genmap.bedgraph"),
+        sorted_bg = "results/{refGenome}/genmap/sorted_mappability.bg"
     params:
-        indir = os.path.join(workflow.default_remote_prefix, "results/{ref_name}/genmap_index"),
-        outdir = os.path.join(workflow.default_remote_prefix, "results/{ref_name}/genmap"),
+        indir = os.path.join(DEFAULT_STORAGE_PREFIX, "results/{refGenome}/genmap_index"),
+        outdir = os.path.join(DEFAULT_STORAGE_PREFIX, "results/{refGenome}/genmap"),
         kmer = config['mappability_k']
     log:
-        "logs/{ref_name}/genmap/log.txt"
+        "logs/{refGenome}/genmap/log.txt"
     benchmark:
-        "benchmarks/{ref_name}/genmap/benchmark.txt"
+        "benchmarks/{refGenome}/genmap/benchmark.txt"
     conda:
         "../envs/mappability.yml"
-    resources:
-        mem_mb = lambda wildcards, attempt: attempt * resources['genmap']['threads'] * 4000
-    threads:
-        resources['genmap']['threads'] 
     shell:
         # snakemake creates the output directory before the shell command, but genmap doesnt like this. so we remove the directory first.
         """
@@ -28,16 +24,14 @@ rule genmap:
 
 rule mappability_bed:
     input:
-        map = "results/{ref_name}/genmap/sorted_mappability.bg"
+        map = "results/{refGenome}/genmap/sorted_mappability.bg"
     output:
-        callable_sites = "results/{ref_name}/callable_sites/{prefix}_callable_sites_map.bed" if config['cov_filter'] else "results/{ref_name}/{prefix}_callable_sites.bed",
-        tmp_map = temp("results/{ref_name}/callable_sites/{prefix}_temp_map.bed")
+        callable_sites = "results/{refGenome}/callable_sites/{prefix}_callable_sites_map.bed" if config['cov_filter'] else "results/{refGenome}/{prefix}_callable_sites.bed",
+        tmp_map = temp("results/{refGenome}/callable_sites/{prefix}_temp_map.bed")
     conda:
         "../envs/mappability.yml"
     benchmark:
-        "benchmarks/{ref_name}/mapbed/{prefix}_benchmark.txt"
-    resources:
-        mem_mb = lambda wildcards, attempt: attempt * resources['callable_bed']['threads'] * 4000
+        "benchmarks/{refGenome}/mapbed/{prefix}_benchmark.txt"
     params:
         merge = config['mappability_merge'],
         mappability = config['mappability_min']

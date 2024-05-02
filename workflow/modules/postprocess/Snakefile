@@ -1,22 +1,31 @@
-import pandas as pd
+import sys
 import os
+from pathlib import Path
+
+# Get utils. This is not great, but we can move to setup.py and install via pip later if want
+utils_path = (Path(workflow.main_snakefile).parent.parent.parent).resolve()
+if str(utils_path) not in sys.path:
+    sys.path.append(str(utils_path))
+
+import pandas as pd
+import snparcher_utils
 configfile: "config/config.yaml"
 
-samples = pd.read_table(config["samples"], sep=",", dtype=str).replace(' ', '_', regex=True)
-
+samples = snparcher_utils.parse_sample_sheet(config)
+REFGENOME = samples['refGenome'].unique().tolist()
 
 rule all:
     input:
-        expand("results/{ref_name}/{prefix}_filtered.vcf.gz", ref_name=config['ref_name'], prefix=config['final_prefix']),
-        expand("results/{ref_name}/{prefix}_clean_snps.vcf.gz", ref_name=config['ref_name'], prefix=config['final_prefix']),
-        expand("results/{ref_name}/{prefix}_clean_indels.vcf.gz", ref_name=config['ref_name'], prefix=config['final_prefix'])
+        expand("results/{refGenome}/{prefix}_filtered.vcf.gz", refGenome=REFGENOME, prefix=config['final_prefix']),
+        expand("results/{refGenome}/{prefix}_clean_snps.vcf.gz", refGenome=REFGENOME, prefix=config['final_prefix']),
+        expand("results/{refGenome}/{prefix}_clean_indels.vcf.gz", refGenome=REFGENOME, prefix=config['final_prefix'])
 
 rule filter_individuals:
     """
     make list of individuals to exclude based on sampleType column
     """
     output:
-        include = "results/{ref_name}/postprocess/{prefix}_samps.txt",
+        include = "results/{refGenome}/postprocess/{prefix}_samps.txt",
     run:
         out_df = samples[["BioSample", "SampleType"]]
         out_df.drop_duplicates("BioSample", inplace=True)
@@ -30,13 +39,15 @@ rule basic_filter:
     sites with reference equal to N or alt equal to ., and sites with AF == 0.
     """
     input: 
-        vcf = "results/{ref_name}/{prefix}_raw.vcf.gz",
-        include = "results/{ref_name}/postprocess/{prefix}_samps.txt"
+        vcf = "results/{refGenome}/{prefix}_raw.vcf.gz",
+        include = "results/{refGenome}/postprocess/{prefix}_samps.txt"
     output:
-        filtered = "results/{ref_name}/{prefix}_filtered.vcf.gz",
-        filtered_idx = "results/{ref_name}/{prefix}_filtered.vcf.gz.csi"
+        filtered = "results/{refGenome}/{prefix}_filtered.vcf.gz",
+        filtered_idx = "results/{refGenome}/{prefix}_filtered.vcf.gz.csi"
     conda:
         "envs/filter.yml"
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 4000
     shell:
         """
         bcftools view -S {input.include} -f .,PASS {input.vcf} -a -U -O u | bcftools +fill-tags -Ou |
@@ -49,13 +60,15 @@ rule update_bed:
     Updates callable sites bed file to add contigs less than threshold to regions to exclude
     """
     input:
-        bed = "results/{ref_name}/{prefix}_callable_sites.bed",
-        fai = "results/{ref_name}/data/genome/{ref_name}.fasta.fai"
+        bed = "results/{refGenome}/{prefix}_callable_sites.bed",
+        fai = "results/{refGenome}/data/genome/{refGenome}.fna.fai"
     output:
-        bed = "results/{ref_name}/postprocess/{prefix}_exclude_sites.bed",
-        tmp_bed = temp("results/{ref_name}/postprocess/{prefix}_tmp.bed")
+        bed = "results/{refGenome}/postprocess/{prefix}_exclude_sites.bed",
+        tmp_bed = temp("results/{refGenome}/postprocess/{prefix}_tmp.bed")
     conda:
         "envs/bed.yml"
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 4000
     params:
         size_filter = config["contig_size"],
     shell:
@@ -66,18 +79,20 @@ rule update_bed:
 
 rule strict_filter:  
     input: 
-        bed = "results/postprocess/{prefix}_exclude_sites.bed",
-        vcf = "results/{prefix}_filtered.vcf.gz",
-        filtered_idx = "results/{prefix}_filtered.vcf.gz.csi"
+        bed = "results/{refGenome}/postprocess/{prefix}_exclude_sites.bed",
+        vcf = "results/{refGenome}/{prefix}_filtered.vcf.gz",
+        filtered_idx = "results/{refGenome}/{prefix}_filtered.vcf.gz.csi"
     output: 
-        vcf = temp("results/postprocess/{prefix}_filtered.TEMP.vcf.gz"),
-        idx = temp("results/postprocess/{prefix}_filtered.TEMP.vcf.gz.csi")
+        vcf = temp("results/{refGenome}/postprocess/{prefix}_filtered.TEMP.vcf.gz"),
+        idx = temp("results/{refGenome}/postprocess/{prefix}_filtered.TEMP.vcf.gz.csi")
     conda:
         "envs/filter.yml"
     params:
         miss = config["missingness"],
         maf = config["maf"],
         chr_ex = config["scaffolds_to_exclude"]
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 4000    
     shell:
         """
         if [ -z "{params.chr_ex}" ]
@@ -98,15 +113,17 @@ rule subset_indels:
     Produce a clean vcf with only indels variants.
     """
     input: 
-        vcf = "results/postprocess/{prefix}_filtered.TEMP.vcf.gz",
-        idx = "results/postprocess/{prefix}_filtered.TEMP.vcf.gz.csi",
+        vcf = "results/{refGenome}/postprocess/{prefix}_filtered.TEMP.vcf.gz",
+        idx = "results/{refGenome}/postprocess/{prefix}_filtered.TEMP.vcf.gz.csi",
     output: 
-        vcf = "results/{ref_name}/{prefix}_clean_indels.vcf.gz",
-        idx = "results/{ref_name}/{prefix}_clean_indels.vcf.gz.tbi"
+        vcf = "results/{refGenome}/{prefix}_clean_indels.vcf.gz",
+        idx = "results/{refGenome}/{prefix}_clean_indels.vcf.gz.tbi"
     conda:
         "envs/filter.yml"
     log:
-        "logs/{ref_name}/postprocess/{prefix}_subset_indels.txt"
+        "logs/{refGenome}/postprocess/{prefix}_subset_indels.txt"
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 4000
     shell:
         """
         bcftools view -v indels -O z -o {output.vcf} {input.vcf}
@@ -118,15 +135,17 @@ rule subset_snps:
     Produce a clean vcf with only simple snps.
     """
     input: 
-        vcf = "results/{ref_name}/postprocess/{prefix}_filtered.TEMP.vcf.gz",
-        idx = "results/{ref_name}/postprocess/{prefix}_filtered.TEMP.vcf.gz.csi"
+        vcf = "results/{refGenome}/postprocess/{prefix}_filtered.TEMP.vcf.gz",
+        idx = "results/{refGenome}/postprocess/{prefix}_filtered.TEMP.vcf.gz.csi"
     output: 
-        vcf = "results/{ref_name}/{prefix}_clean_snps.vcf.gz",
-        idx = "results/{ref_name}/{prefix}_clean_snps.vcf.gz.tbi"
+        vcf = "results/{refGenome}/{prefix}_clean_snps.vcf.gz",
+        idx = "results/{refGenome}/{prefix}_clean_snps.vcf.gz.tbi"
     conda:
         "envs/filter.yml"    
     log:
-        "logs/{ref_name}/postprocess/{prefix}_subset_snps.txt"
+        "logs/{refGenome}/postprocess/{prefix}_subset_snps.txt"
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 4000
     shell:
         """
         bcftools view -v snps -e 'TYPE ~ "indel"' -O z -o {output.vcf} {input.vcf}
