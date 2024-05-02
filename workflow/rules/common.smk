@@ -24,10 +24,10 @@ def get_output():
     out = []
     sample_names = samples['BioSample'].unique().tolist()
 
-    #for ref in genomes:
-    out.extend(expand("results/{ref_name}/gvcfs/{sample}.g.vcf.gz", ref_name=ref, sample=sample_names))
-    #out.extend(expand("results/{ref_name}/summary_stats/{prefix}_bam_sumstats.txt", prefix=config['final_prefix']))
-    #out.extend(expand("results/{ref_name}/{prefix}_callable_sites.bed", refGenome=ref, prefix=config['final_prefix']))#Do not want this in current version for anything
+    #out.extend(expand("results/{ref_name}/gvcfs/{sample}.g.vcf.gz", ref_name=ref, sample=sample_names))
+    out.extend(expand("results/{ref_name}/{prefix}_raw.vcf.gz",ref_name=ref, prefix=config["final_prefix"])))
+    out.extend(expand("results/{ref_name}/summary_stats/{prefix}_bam_sumstats.txt", ref_name=ref, prefix=config['final_prefix']))
+    out.extend(expand("results/{ref_name}/{prefix}_callable_sites.bed", ref_name=ref, prefix=config['final_prefix']))#Do not want this in current version for anything
 
     #out.append(rules.qc_all.input)
     #if "SampleType" in samples.columns:
@@ -55,7 +55,7 @@ def get_interval_gvcfs(wc):
         lines = [l.strip() for l in f.readlines()]
     list_files = [os.path.basename(x) for x in lines]
     list_numbers = [f.replace("-scattered.interval_list", "") for f in list_files]
-    gvcfs = expand("results/{ref_name}/interval_gvcfs/{{sample}}/{l}.raw.g.vcf.gz", l=list_numbers)
+    gvcfs = expand("results/{ref_name}/interval_gvcfs/{{sample}}/{l}.raw.g.vcf.gz", ref_name=ref l=list_numbers)
     
     return gvcfs
 
@@ -64,7 +64,7 @@ def get_interval_gvcfs_idx(wc):
     return tbis
 
 def get_db_interval_count(wc):
-    _samples = samples.loc[(samples['refGenome'] == wc.refGenome)]['BioSample'].unique().tolist()
+    _samples = samples['BioSample'].unique().tolist()
     out = max(int((config["db_scatter_factor"]) * len(_samples) * config["num_gvcf_intervals"]), 1)
     return out
 
@@ -84,7 +84,7 @@ def get_interval_vcfs_idx(wc):
     return tbis
     
 def get_gvcfs_db(wc):
-    _samples = samples.loc[(samples['refGenome'] == wc.refGenome)]['BioSample'].unique().tolist()
+    _samples = samples['BioSample'].unique().tolist()
     gvcfs = expand("results/{ref_name}/gvcfs/{sample}.g.vcf.gz", sample=_samples)
     tbis = expand("results/{ref_name}/gvcfs/{sample}.g.vcf.gz.tbi", sample=_samples)
     return {"gvcfs": gvcfs, "tbis": tbis}
@@ -156,7 +156,7 @@ def get_read_group(wc):
     )
 
 def get_input_sumstats(wildcards):
-    _samples = samples.loc[(samples['refGenome'] == wildcards.refGenome)]['BioSample'].unique().tolist()
+    _samples = samples['BioSample'].unique().tolist()
     aln = expand("results/summary_stats/{sample}_AlnSumMets.txt", sample=_samples)
     cov = expand("results/summary_stats/{sample}_coverage.txt", sample=_samples)
     fastp = expand("results/summary_stats/{sample}_fastp.out", sample=_samples)
@@ -186,24 +186,24 @@ def get_input_sumstats(wildcards):
         return out
 
 def get_input_for_mapfile(wildcards):
-    sample_names = samples.loc[(samples['refGenome'] == wildcards.refGenome)]['BioSample'].unique().tolist()
+    sample_names = samples['BioSample'].unique().tolist()
     return expand("results/gvcfs/{sample}.g.vcf.gz", sample=sample_names)
 
 def get_input_for_coverage(wildcards):
     # Gets the correct sample given the organism and reference genome for the bedgraph merge step
-    _samples = samples.loc[(samples['refGenome'] == wildcards.refGenome)]['BioSample'].unique().tolist()
+    _samples = samples['BioSample'].unique().tolist()
     d4files = expand("results/callable_sites/{sample}.per-base.d4", sample=_samples)
     return {'d4files': d4files}
 
 def get_input_covstats(wildcards):
     # Gets the correct sample given the organism and reference genome for the bedgraph merge step
-    _samples = samples.loc[(samples['refGenome'] == wildcards.refGenome)]['BioSample'].unique().tolist()
+    _samples = samples['BioSample'].unique().tolist()
     covstats = expand("results/callable_sites/{sample}.mosdepth.summary.txt", sample=_samples)
     return {'covStatFiles': covstats}
 
 def get_bedgraphs(wildcards):
     """Snakemake seems to struggle with unpack() and default_remote_prefix. So we have to do this one by one."""
-    _samples = samples.loc[(samples['Organism'] == wildcards.Organism) & (samples['refGenome'] == wildcards.refGenome)]['BioSample'].unique().tolist()
+    _samples = samples['BioSample'].unique().tolist()
     bedgraphFiles = expand(config['output'] + "{{Organism}}/{{ref_name}}/" + config['bamDir'] + "preMerge/{sample}" + ".sorted.bg", sample=_samples)
     return bedgraphFiles
 
