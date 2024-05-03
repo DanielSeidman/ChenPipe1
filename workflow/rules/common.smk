@@ -21,10 +21,10 @@ if SNAKEMAKE_VERSION >= 8:
 else:
     DEFAULT_STORAGE_PREFIX = workflow.default_remote_prefix
 
-    samples = pd.read_table(config["samples"],sep=",",dtype=str).replace(' ','_',regex=True)
-    ref = config['ref_name']
-    with open(config["resource_config"],"r") as f:
-        resources = safe_load(f)
+samples = pd.read_table(config["samples"],sep=",",dtype=str).replace(' ','_',regex=True)
+ref = config['ref_name']
+with open(config["resource_config"],"r") as f:
+    resources = safe_load(f)
 
 
 def get_output():
