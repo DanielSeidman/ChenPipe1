@@ -193,18 +193,19 @@ def sentieon_combine_gvcf_input(wc):
     return {"gvcfs": gvcfs, "tbis": tbis}
 
 
+#NOTE: This currently creates a trim_galore directory due to trim_galore's inability to produce it. This is bad coding
 def get_reads(wc):
     """Returns local read files if present. Defaults to SRR if no local reads in sample sheet."""
-    row = samples.loc[samples["Run"] == wc.run]
-    r1 = f"results/data/fastq/{wc.ref_name}/{wc.sample}/{wc.run}_1.fastq.gz"
-    r2 = f"results/data/fastq/{wc.ref_name}/{wc.sample}/{wc.run}_2.fastq.gz"
+    row = samples.loc[samples['Run'] == wc.run]
+    print("test b"+wc.run)
+    print("test b"+wc.sample)
     if 'fq1' in samples.columns and 'fq2' in samples.columns:
         if os.path.exists(row.fq1.item()) and os.path.exists(row.fq2.item()):
-            r1dir = "results/" + config['ref_name'] + "/data/fastq/" + wc.sample + "/"
-            r1 = r1dir + wc.run + "_1.fastq.gz"
+            r1dir = "results/"+config['ref_name']+"/data/fastq/"+wc.sample+"/"
+            r1=r1dir+wc.run+"_1.fastq.gz"
             #f"results/{config['ref_name']}/data/fastq/{wc.sample}/"{wc.run}_1.fastq.gz"
-            r2dir = "results/" + config['ref_name'] + "/data/fastq/" + wc.sample + "/"
-            r2 = r2dir + wc.run + "_2.fastq.gz"
+            r2dir = "results/"+config['ref_name']+"/data/fastq/"+wc.sample+"/"
+            r2=r2dir+wc.run+"_2.fastq.gz"
             if not os.path.exists(r1):
                 if not os.path.isdir(os.path.dirname(r1dir)):
                     os.makedirs(os.path.dirname(r1dir))
@@ -213,6 +214,11 @@ def get_reads(wc):
                 if not os.path.isdir(os.path.dirname(r2dir)):
                     os.makedirs(os.path.dirname(r2dir))
                 os.symlink(row.fq2.item(),r2)
+            #Makes trimgalore outer directory. Bad coding. TODO: move this if can figure out how
+            if not os.path.exists("results/"+config['ref_name']+"/trimgalore_fastqs/"):
+                if not os.path.isdir(os.path.dirname("results/"+config['ref_name']+"/trimgalore_fastqs/")):
+                    os.makedirs(os.path.dirname("results/"+config['ref_name']+"/trimgalore_fastqs/"))
+
             return {"r1": r1, "r2": r2}
         else:
             print(row.fq1.item(),os.path.exists(row.fq1.item()))
