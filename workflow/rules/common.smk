@@ -238,11 +238,13 @@ def collect_fastp_stats_input(wc):
 
 def get_read_group(wc):
     """Denote sample name and library_id in read group."""
-    libname = samples.loc[samples["Run"] == wc.run]["LibraryName"].tolist()[0]
-    return r"'@RG\tID:{lib}\tSM:{sample}\tLB:{lib}\tPL:ILLUMINA'".format(
-        sample=wc.sample, lib=libname
+    tokens=wc.run.split("_")
+    ##libname = samples.loc[samples['Run'] == wc.run]["LibraryName"].tolist()[0]
+    return r"'@RG\tID:{id_string}\tSM:{sm_string}\tLB:{lb_string}\tPL:ILLUMINA'".format(
+        id_string="tokens[2]}_{tokens[3]",
+        sm_string="tokens[0]",
+        lb_string="tokens[1]"
     )
-
 
 def get_input_sumstats(wildcards):
     _samples = samples.loc[(samples["ref_name"] == wildcards.ref_name)]["BioSample"].unique().tolist()
