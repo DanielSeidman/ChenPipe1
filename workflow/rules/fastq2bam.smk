@@ -10,7 +10,7 @@ rule trim_galore_call:
     log:
         "logs/{ref_name}/trim_galore/{sample}/{run}.txt"
     shell:
-        "trim_galore --paired {input.r1} {input.r2} -o results/{wildcards.ref_name}/trimgalore_fastqs/{wildcards.sample}/"
+        "trim_galore --paired {input.r1} {input.r2} -o results/{wildcards.ref_name}/trimgalore_fastqs/{wildcards.sample}/ &> {log}"
 
 rule bwa_map:
     input:

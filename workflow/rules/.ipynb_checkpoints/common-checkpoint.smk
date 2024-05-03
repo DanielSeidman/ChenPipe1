@@ -106,6 +106,7 @@ def sentieon_combine_gvcf_input(wc):
     tbis = expand("results/gvcfs/{sample}.g.vcf.gz.tbi", sample=_samples)
     return {"gvcfs": gvcfs, "tbis": tbis}
 
+#NOTE: This currently creates a trim_galore directory due to trim_galore's inability to produce it. This is bad coding
 def get_reads(wc):
     """Returns local read files if present. Defaults to SRR if no local reads in sample sheet."""
     row = samples.loc[samples['Run'] == wc.run]
@@ -126,6 +127,11 @@ def get_reads(wc):
                 if not os.path.isdir(os.path.dirname(r2dir)):
                     os.makedirs(os.path.dirname(r2dir))
                 os.symlink(row.fq2.item(),r2)
+            #Makes trimgalore outer directory. Bad coding. TODO: move this if can figure out how
+            if not os.path.exists("results/"+config['ref_name']+"/trimgalore_fastqs/"):
+                if not os.path.isdir(os.path.dirname("results/"+config['ref_name']+"/trimgalore_fastqs/")):
+                    os.makedirs(os.path.dirname("results/"+config['ref_name']+"/trimgalore_fastqs/"))
+
             return {"r1": r1, "r2": r2}
         else:
             print(row.fq1.item(),os.path.exists(row.fq1.item()))
