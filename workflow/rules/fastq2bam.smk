@@ -6,10 +6,7 @@ rule trim_galore_call:
         r2trim="results/{ref_name}/trimgalore_fastqs/{sample}/{run}_2_val_2.fq.gz",
     conda:
         "../envs/fastq2bam.yml"
-    threads:
-        resources['trim_galore_call']['threads']
-    resources:
-        mem_mb = lambda wildcards,attempt: attempt * resources['trim_galore_call']['threads'] * 4000
+
     log:
         "logs/{ref_name}/trim_galore/{sample}/{run}.txt"
     shell:
