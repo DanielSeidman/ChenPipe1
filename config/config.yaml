@@ -20,7 +20,7 @@ sort_reads: False
 ##############################
 
 # Set reference genome here if you would like to you use the same reference genome for all samples in sample sheet. See docs for more info.
-# refGenome:
+# ref_name:
 # refPath:
 
 # Interval approach options, only applicable if intervals is True

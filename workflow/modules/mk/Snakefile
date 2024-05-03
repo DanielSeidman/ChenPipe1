@@ -2,11 +2,11 @@ configfile: "config/config.yaml"
 include: "common.smk"
 
 
-REFGENOME = samples['refGenome'].unique().tolist()
+ref_name = samples['ref_name'].unique().tolist()
 
 rule all:
     input:
-        expand("results/{refGenome}/mk/{prefix}_mk_table.tsv", refGenome=REFGENOME, prefix=config['final_prefix'])
+        expand("results/{ref_name}/mk/{prefix}_mk_table.tsv", ref_name=ref_name, prefix=config['final_prefix'])
 
 rule prep_genome:
     """
@@ -16,11 +16,11 @@ rule prep_genome:
         ref = get_ref,
         gff = get_gff
     output:
-        ref = "results/{refGenome}/mk/{refGenome}.fna",
-        gff = "results/{refGenome}/mk/{refGenome}.gff"
+        ref = "results/{ref_name}/mk/{ref_name}.fna",
+        gff = "results/{ref_name}/mk/{ref_name}.gff"
     params:
-        dataset = "results/{refGenome}/mk/{refGenome}_dataset.zip",
-        outdir = "results/{refGenome}/mk/{refGenome}"
+        dataset = "results/{ref_name}/mk/{ref_name}_dataset.zip",
+        outdir = "results/{ref_name}/mk/{ref_name}"
     conda:
         "envs/ncbi.yml"
     shell:
@@ -28,19 +28,19 @@ rule prep_genome:
         set +e
         #if genome is local, datasets will fail, we will just continue
         mkdir -p {params.outdir}
-        datasets download genome accession  --exclude-protein --exclude-rna --filename {params.dataset} {wildcards.refGenome} \
+        datasets download genome accession  --exclude-protein --exclude-rna --filename {params.dataset} {wildcards.ref_name} \
         && 7z x {params.dataset} -aoa -o{params.outdir}
 
         if [ -z "{input.ref}" ]
         then
-            cat {params.outdir}/ncbi_dataset/data/{wildcards.refGenome}/*.fna > {output.ref}
+            cat {params.outdir}/ncbi_dataset/data/{wildcards.ref_name}/*.fna > {output.ref}
         else
             cp {input.ref} {output.ref}
         fi
 
        if [ -z "{input.gff}" ]
         then
-            cp {params.outdir}/ncbi_dataset/data/{wildcards.refGenome}/genomic.gff {output.gff}
+            cp {params.outdir}/ncbi_dataset/data/{wildcards.ref_name}/genomic.gff {output.gff}
         else
             cp {input.gff} {output.gff}
         fi
@@ -51,8 +51,8 @@ rule split_samples:
     Splits sample sheet to make ingroup and outgroup files
     """
     output:
-        exclude = "results/{refGenome}/mk/{prefix}_exclude.txt",
-        outgroups = "results/{refGenome}/mk/{prefix}_ougroups.txt"
+        exclude = "results/{ref_name}/mk/{prefix}_exclude.txt",
+        outgroups = "results/{ref_name}/mk/{prefix}_ougroups.txt"
     run:
         out_df = samples[["BioSample", "SampleType"]]
         out_df.drop_duplicates("BioSample", inplace=True)
@@ -66,26 +66,26 @@ rule degenotate:
     Runs degenotate to compute MK tables
     """
     input:
-        vcf = "results/{refGenome}/{prefix}_clean_snps.vcf.gz",
-        genome = "results/{refGenome}/mk/{refGenome}.fna",
-        gff = "results/{refGenome}/mk/{refGenome}.gff",
-        exclude = "results/{refGenome}/mk/{prefix}_exclude.txt",
-        outgroups = "results/{refGenome}/mk/{prefix}_ougroups.txt"
+        vcf = "results/{ref_name}/{prefix}_clean_snps.vcf.gz",
+        genome = "results/{ref_name}/mk/{ref_name}.fna",
+        gff = "results/{ref_name}/mk/{ref_name}.gff",
+        exclude = "results/{ref_name}/mk/{prefix}_exclude.txt",
+        outgroups = "results/{ref_name}/mk/{prefix}_ougroups.txt"
     output:
-        "results/{refGenome}/mk/{prefix}_mk_table.tsv"
+        "results/{ref_name}/mk/{prefix}_mk_table.tsv"
     params:
         delim = "space"
     log:
-        "logs/{refGenome}/mk/{prefix}_degenotate.txt"
+        "logs/{ref_name}/mk/{prefix}_degenotate.txt"
     conda:
         "envs/mk.yml"
     shell:
         """
         if [ -s {input.exclude} ]
         then
-            degenotate.py --overwrite -a {input.gff} -g {input.genome} -u {input.outgroups} -e {input.exclude} -d {params.delim} -o "results/{wildcards.refGenome}/mk/{wildcards.prefix}_degen_raw" -v {input.vcf}
+            degenotate.py --overwrite -a {input.gff} -g {input.genome} -u {input.outgroups} -e {input.exclude} -d {params.delim} -o "results/{wildcards.ref_name}/mk/{wildcards.prefix}_degen_raw" -v {input.vcf}
         else
-            degenotate.py --overwrite -a {input.gff} -g {input.genome} -u {input.outgroups} -d {params.delim} -o "results/{wildcards.refGenome}/mk/{wildcards.prefix}_degen_raw" -v {input.vcf}
+            degenotate.py --overwrite -a {input.gff} -g {input.genome} -u {input.outgroups} -d {params.delim} -o "results/{wildcards.ref_name}/mk/{wildcards.prefix}_degen_raw" -v {input.vcf}
         fi
-        cp results/{wildcards.refGenome}/mk/{wildcards.prefix}_degen_raw/mk.tsv {output}
+        cp results/{wildcards.ref_name}/mk/{wildcards.prefix}_degen_raw/mk.tsv {output}
         """

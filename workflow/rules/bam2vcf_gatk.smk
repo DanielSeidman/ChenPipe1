@@ -6,17 +6,17 @@ rule bam2gvcf:
     """
     input:
         unpack(get_bams),
-        ref = "results/{refGenome}/data/genome/{refGenome}.fna",
-        indexes = expand("results/{{refGenome}}/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
-        dictf = "results/{refGenome}/data/genome/{refGenome}.dict",
+        ref = "config/{ref_name}.fasta",
+        indexes = expand("config/{{ref_name}}.fasta.{ext}",ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
+        dictf = "config/{ref_name}.dict",
         
     output:
-        gvcf = "results/{refGenome}/gvcfs/{sample}.g.vcf.gz",
-        tbi = "results/{refGenome}/gvcfs/{sample}.g.vcf.gz.tbi"
+        gvcf = "results/{ref_name}/gvcfs/{sample}.g.vcf.gz",
+        tbi = "results/{ref_name}/gvcfs/{sample}.g.vcf.gz.tbi"
     log:
-        "logs/{refGenome}/gatk_hc/{sample}.txt"
+        "logs/{ref_name}/gatk_hc/{sample}.txt"
     benchmark:
-        "benchmarks/{refGenome}/gatk_hc/{sample}.txt"
+        "benchmarks/{ref_name}/gatk_hc/{sample}.txt"
     params:
         minPrun = config['minP'],
         minDang = config['minD'],
@@ -39,7 +39,7 @@ rule create_db_mapfile:
     input:
         get_input_for_mapfile
     output:
-        db_mapfile = "results/{refGenome}/genomics_db_import/DB_mapfile.txt"
+        db_mapfile = "results/{ref_name}/genomics_db_import/DB_mapfile.txt"
     run:
         with open(output.db_mapfile, "w") as f:
             for file_path in input:
@@ -49,9 +49,9 @@ rule create_db_mapfile:
 rule prepare_db_intervals:
     """GenomicsDBImport needs list of intervals to operate on so this rule writes that file"""
     input:
-        fai = "results/{refGenome}/data/genome/{refGenome}.fna.fai",
+        fai = "results/{ref_name}/data/genome/{ref_name}.fna.fai",
     output:
-        intervals = "results/{refGenome}/genomics_db_import/db_intervals.list"
+        intervals = "results/{ref_name}/genomics_db_import/db_intervals.list"
     run:
         with open(output.intervals, "w") as out:
             with open(input.fai, "r") as f:
@@ -66,15 +66,15 @@ rule gvcf2DB:
     """
     input:
         unpack(get_gvcfs_db),
-        db_mapfile = "results/{refGenome}/genomics_db_import/DB_mapfile.txt",
-        intervals = "results/{refGenome}/genomics_db_import/db_intervals.list"
+        db_mapfile = "results/{ref_name}/genomics_db_import/DB_mapfile.txt",
+        intervals = "results/{ref_name}/genomics_db_import/db_intervals.list"
     output:
-        db = temp(directory("results/{refGenome}/genomics_db_import/DB")),
-        tar = temp("results/{refGenome}/genomics_db_import/DB.tar"),        
+        db = temp(directory("results/{ref_name}/genomics_db_import/DB")),
+        tar = temp("results/{ref_name}/genomics_db_import/DB.tar"),        
     log:
-        "logs/{refGenome}/gatk_db_import.txt"
+        "logs/{ref_name}/gatk_db_import.txt"
     benchmark:
-        "benchmarks/{refGenome}/gatk_db_import.txt"
+        "benchmarks/{ref_name}/gatk_db_import.txt"
     conda:
         "../envs/bam2vcf.yml"
     shell:
@@ -101,18 +101,18 @@ rule DB2vcf:
     are still scattered.
     """
     input:
-        db = "results/{refGenome}/genomics_db_import/DB.tar",
-        ref = "results/{refGenome}/data/genome/{refGenome}.fna",
+        db = "results/{ref_name}/genomics_db_import/DB.tar",
+        ref = "results/{ref_name}/data/genome/{ref_name}.fna",
     output:
-        vcf = temp("results/{refGenome}/vcfs/raw.vcf.gz"),
-        vcfidx = temp("results/{refGenome}/vcfs/raw.vcf.gz.tbi"),
+        vcf = temp("results/{ref_name}/vcfs/raw.vcf.gz"),
+        vcfidx = temp("results/{ref_name}/vcfs/raw.vcf.gz.tbi"),
     params:
         het = config['het_prior'],
         db = lambda wc, input: input.db[:-4]
     log:
-        "logs/{refGenome}/gatk_genotype_gvcfs.txt"
+        "logs/{ref_name}/gatk_genotype_gvcfs.txt"
     benchmark:
-        "benchmarks/{refGenome}/gatk_genotype_gvcfs.txt"
+        "benchmarks/{ref_name}/gatk_genotype_gvcfs.txt"
     conda:
         "../envs/bam2vcf.yml"
     shell:
@@ -133,18 +133,18 @@ rule filterVcfs:
     This rule filters all of the VCFs
     """
     input:
-        vcf = "results/{refGenome}/vcfs/raw.vcf.gz",
-        vcfidx = "results/{refGenome}/vcfs/raw.vcf.gz.tbi",
-        ref = "results/{refGenome}/data/genome/{refGenome}.fna"
+        vcf = "results/{ref_name}/vcfs/raw.vcf.gz",
+        vcfidx = "results/{ref_name}/vcfs/raw.vcf.gz.tbi",
+        ref = "results/{ref_name}/data/genome/{ref_name}.fna"
     output:
-        vcf = temp("results/{refGenome}/vcfs/filtered.vcf.gz"),
-        vcfidx = temp("results/{refGenome}/vcfs/filtered.vcf.gz.tbi")
+        vcf = temp("results/{ref_name}/vcfs/filtered.vcf.gz"),
+        vcfidx = temp("results/{ref_name}/vcfs/filtered.vcf.gz.tbi")
     conda:
         "../envs/bam2vcf.yml"
     log:
-        "logs/{refGenome}/gatk_filter.txt"
+        "logs/{ref_name}/gatk_filter.txt"
     benchmark:
-        "benchmarks/{refGenome}/gatk_filter.txt"
+        "benchmarks/{ref_name}/gatk_filter.txt"
     shell:
         "gatk VariantFiltration "
         "-R {input.ref} "
@@ -163,17 +163,17 @@ rule filterVcfs:
 
 rule sort_gatherVcfs:
     input:
-        vcf = "results/{refGenome}/vcfs/filtered.vcf.gz",
-        vcfidx = "results/{refGenome}/vcfs/filtered.vcf.gz.tbi"
+        vcf = "results/{ref_name}/vcfs/filtered.vcf.gz",
+        vcfidx = "results/{ref_name}/vcfs/filtered.vcf.gz.tbi"
     output:
-        vcfFinal = "results/{refGenome}/{prefix}_raw.vcf.gz",
-        vcfFinalidx = "results/{refGenome}/{prefix}_raw.vcf.gz.tbi"
+        vcfFinal = "results/{ref_name}/{prefix}_raw.vcf.gz",
+        vcfFinalidx = "results/{ref_name}/{prefix}_raw.vcf.gz.tbi"
     conda:
         "../envs/bcftools.yml"
     log:
-        "logs/{refGenome}/sort_gather_vcfs/{prefix}_log.txt"
+        "logs/{ref_name}/sort_gather_vcfs/{prefix}_log.txt"
     benchmark:
-        "benchmarks/{refGenome}/sort_gather_vcfs/{prefix}_benchmark.txt"
+        "benchmarks/{ref_name}/sort_gather_vcfs/{prefix}_benchmark.txt"
     shell:
         """
         bcftools sort -Oz -o {output.vcfFinal} {input.vcf} 2>> {log}

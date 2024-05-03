@@ -1,10 +1,10 @@
 rule bam_sumstats:
     input:
         unpack(get_bams),
-        ref = "results/{refGenome}/data/genome/{refGenome}.fna",
+        ref = "results/{ref_name}/data/genome/{ref_name}.fna",
     output:
-        cov = "results/{refGenome}/summary_stats/{sample}_coverage.txt",
-        alnSum = "results/{refGenome}/summary_stats/{sample}_AlnSumMets.txt",
+        cov = "results/{ref_name}/summary_stats/{sample}_coverage.txt",
+        alnSum = "results/{ref_name}/summary_stats/{sample}_AlnSumMets.txt",
     conda:
         "../envs/fastq2bam.yml"
     shell:
@@ -16,16 +16,16 @@ rule bam_sumstats:
 rule sentieon_bam_stats:
     input:
         unpack(get_bams),
-        indexes = expand("results/{{refGenome}}/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
-        ref = "results/{refGenome}/data/genome/{refGenome}.fna"
+        indexes = expand("results/{{ref_name}}/data/genome/{{ref_name}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
+        ref = "results/{ref_name}/data/genome/{ref_name}.fna"
     params:
         lic = config['sentieon_lic']
     output:
-        insert_file = "results/{refGenome}/summary_stats/{sample}_insert_metrics.txt",
-        qd = "results/{refGenome}/summary_stats/{sample}_qd_metrics.txt",
-        gc = "results/{refGenome}/summary_stats/{sample}_gc_metrics.txt",
-        gc_summary = "results/{refGenome}/summary_stats/{sample}_gc_summary.txt",
-        mq = "results/{refGenome}/summary_stats/{sample}_mq_metrics.txt"
+        insert_file = "results/{ref_name}/summary_stats/{sample}_insert_metrics.txt",
+        qd = "results/{ref_name}/summary_stats/{sample}_qd_metrics.txt",
+        gc = "results/{ref_name}/summary_stats/{sample}_gc_metrics.txt",
+        gc_summary = "results/{ref_name}/summary_stats/{sample}_gc_summary.txt",
+        mq = "results/{ref_name}/summary_stats/{sample}_mq_metrics.txt"
     conda:
         "../envs/sentieon.yml"
     shell:
@@ -43,7 +43,7 @@ rule collect_fastp_stats:
     input:
         collect_fastp_stats_input
     output:
-        "results/{refGenome}/summary_stats/{sample}_fastp.out"
+        "results/{ref_name}/summary_stats/{sample}_fastp.out"
     shell:
         "cat {input} > {output}"
 
@@ -51,7 +51,7 @@ rule collect_sumstats:
     input:
         unpack(get_input_sumstats)
     output:
-        "results/{refGenome}/summary_stats/{prefix}_bam_sumstats.txt"
+        "results/{ref_name}/summary_stats/{prefix}_bam_sumstats.txt"
     run:
         if not config['sentieon']:
             FractionReadsPassFilter, NumReadsPassFilter = collectFastpOutput(input.fastpFiles)

@@ -6,18 +6,18 @@ rule bam2gvcf:
     """
     input:
         unpack(get_bams),
-        ref = "results/{refGenome}/data/genome/{refGenome}.fna",
-        indexes = expand("results/{{refGenome}}/data/genome/{{refGenome}}.fna.{ext}", ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
-        dictf = "results/{refGenome}/data/genome/{refGenome}.dict",
-        l = "results/{refGenome}/intervals/gvcf_intervals/{l}-scattered.interval_list",
+        l = "results/{ref_name}/intervals/gvcf_intervals/{l}-scattered.interval_list",
+        ref = "config/{ref_name}.fasta",
+        indexes = expand("config/{ref_name}.fasta.{ext}",ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
+        dictf = "config/{ref_name}.dict",
         
     output:
-        gvcf = "results/{refGenome}/interval_gvcfs/{sample}/{l}.raw.g.vcf.gz",
-        gvcf_idx = "results/{refGenome}/interval_gvcfs/{sample}/{l}.raw.g.vcf.gz.tbi"
+        gvcf = "results/{ref_name}/interval_gvcfs/{sample}/{l}.raw.g.vcf.gz",
+        gvcf_idx = "results/{ref_name}/interval_gvcfs/{sample}/{l}.raw.g.vcf.gz.tbi"
     log:
-        "logs/{refGenome}/gatk_hc/{sample}/{l}.txt"
+        "logs/{ref_name}/gatk_hc/{sample}/{l}.txt"
     benchmark:
-        "benchmarks/{refGenome}/gatk_hc/{sample}_{l}.txt"
+        "benchmarks/{ref_name}/gatk_hc/{sample}_{l}.txt"
     params:
         minPrun = config['minP'],
         minDang = config['minD'],
@@ -41,12 +41,12 @@ rule concat_gvcfs:
         gvcfs = get_interval_gvcfs,
         tbis = get_interval_gvcfs_idx
     output:
-        gvcf = temp("results/{refGenome}/gvcfs/{sample}.g.vcf.gz"),
-        tbi = temp("results/{refGenome}/gvcfs/{sample}.g.vcf.gz.tbi")
+        gvcf = temp("results/{ref_name}/gvcfs/{sample}.g.vcf.gz"),
+        tbi = temp("results/{ref_name}/gvcfs/{sample}.g.vcf.gz.tbi")
     log:
-        "logs/{refGenome}/concat_gvcfs/{sample}.txt"
+        "logs/{ref_name}/concat_gvcfs/{sample}.txt"
     benchmark:
-        "benchmarks/{refGenome}/concat_gvcfs/{sample}.txt"
+        "benchmarks/{ref_name}/concat_gvcfs/{sample}.txt"
     resources:
         tmpdir = get_big_temp
     conda:
@@ -59,14 +59,14 @@ rule concat_gvcfs:
 
 rule bcftools_norm:
     input:
-        gvcf = "results/{refGenome}/gvcfs/{sample}.g.vcf.gz",
+        gvcf = "results/{ref_name}/gvcfs/{sample}.g.vcf.gz",
     output:
-        gvcf = "results/{refGenome}/gvcfs_norm/{sample}.g.vcf.gz",
-        tbi = "results/{refGenome}/gvcfs_norm/{sample}.g.vcf.gz.tbi"
+        gvcf = "results/{ref_name}/gvcfs_norm/{sample}.g.vcf.gz",
+        tbi = "results/{ref_name}/gvcfs_norm/{sample}.g.vcf.gz.tbi"
     log:
-        "logs/{refGenome}/norm_gvcf/{sample}.txt"
+        "logs/{ref_name}/norm_gvcf/{sample}.txt"
     benchmark:
-        "benchmarks/{refGenome}/norm_gvcf/{sample}.txt"
+        "benchmarks/{ref_name}/norm_gvcf/{sample}.txt"
     resources:
         tmpdir = get_big_temp
     conda:
@@ -84,7 +84,7 @@ rule create_db_mapfile:
     input:
         get_input_for_mapfile
     output:
-        db_mapfile = "results/{refGenome}/genomics_db_import/DB_mapfile.txt"
+        db_mapfile = "results/{ref_name}/genomics_db_import/DB_mapfile.txt"
     run:
         with open(output.db_mapfile, "w") as f:
             for file_path in input:
@@ -97,15 +97,15 @@ rule gvcf2DB:
     """
     input:
         unpack(get_gvcfs_db),
-        l = "results/{refGenome}/intervals/db_intervals/{l}-scattered.interval_list",
-        db_mapfile = "results/{refGenome}/genomics_db_import/DB_mapfile.txt"
+        l = "results/{ref_name}/intervals/db_intervals/{l}-scattered.interval_list",
+        db_mapfile = "results/{ref_name}/genomics_db_import/DB_mapfile.txt"
     output:
-        db = temp(directory("results/{refGenome}/genomics_db_import/DB_L{l}")),
-        tar = temp("results/{refGenome}/genomics_db_import/DB_L{l}.tar"),        
+        db = temp(directory("results/{ref_name}/genomics_db_import/DB_L{l}")),
+        tar = temp("results/{ref_name}/genomics_db_import/DB_L{l}.tar"),        
     log:
-        "logs/{refGenome}/gatk_db_import/{l}.txt"
+        "logs/{ref_name}/gatk_db_import/{l}.txt"
     benchmark:
-        "benchmarks/{refGenome}/gatk_db_import/{l}.txt"
+        "benchmarks/{ref_name}/gatk_db_import/{l}.txt"
     resources:
         tmpdir = get_big_temp
     conda:
@@ -134,22 +134,22 @@ rule DB2vcf:
     are still scattered.
     """
     input:
-        db = "results/{refGenome}/genomics_db_import/DB_L{l}.tar",
-        ref = "results/{refGenome}/data/genome/{refGenome}.fna",
-        fai = "results/{refGenome}/data/genome/{refGenome}.fna.fai",
-        dictf = "results/{refGenome}/data/genome/{refGenome}.dict",
+        db = "results/{ref_name}/genomics_db_import/DB_L{l}.tar",
+        ref = "results/{ref_name}/data/genome/{ref_name}.fna",
+        fai = "results/{ref_name}/data/genome/{ref_name}.fna.fai",
+        dictf = "results/{ref_name}/data/genome/{ref_name}.dict",
     output:
-        vcf = temp("results/{refGenome}/vcfs/intervals/L{l}.vcf.gz"),
-        vcfidx = temp("results/{refGenome}/vcfs/intervals/L{l}.vcf.gz.tbi"),
+        vcf = temp("results/{ref_name}/vcfs/intervals/L{l}.vcf.gz"),
+        vcfidx = temp("results/{ref_name}/vcfs/intervals/L{l}.vcf.gz.tbi"),
     params:
         het = config['het_prior'],
         db = lambda wc, input: input.db[:-4]
     resources:
         tmpdir = get_big_temp
     log:
-        "logs/{refGenome}/gatk_genotype_gvcfs/{l}.txt"
+        "logs/{ref_name}/gatk_genotype_gvcfs/{l}.txt"
     benchmark:
-        "benchmarks/{refGenome}/gatk_genotype_gvcfs/{l}.txt"
+        "benchmarks/{ref_name}/gatk_genotype_gvcfs/{l}.txt"
     conda:
         "../envs/bam2vcf.yml"
     shell:
@@ -170,20 +170,20 @@ rule filterVcfs:
     This rule filters all of the VCFs
     """
     input:
-        vcf = "results/{refGenome}/vcfs/intervals/L{l}.vcf.gz",
-        vcfidx = "results/{refGenome}/vcfs/intervals/L{l}.vcf.gz.tbi",
-        ref = "results/{refGenome}/data/genome/{refGenome}.fna",
-        fai = "results/{refGenome}/data/genome/{refGenome}.fna.fai",
-        dictf = "results/{refGenome}/data/genome/{refGenome}.dict",
+        vcf = "results/{ref_name}/vcfs/intervals/L{l}.vcf.gz",
+        vcfidx = "results/{ref_name}/vcfs/intervals/L{l}.vcf.gz.tbi",
+        ref = "results/{ref_name}/data/genome/{ref_name}.fna",
+        fai = "results/{ref_name}/data/genome/{ref_name}.fna.fai",
+        dictf = "results/{ref_name}/data/genome/{ref_name}.dict",
     output:
-        vcf = temp("results/{refGenome}/vcfs/intervals/filtered_L{l}.vcf.gz"),
-        vcfidx = temp("results/{refGenome}/vcfs/intervals/filtered_L{l}.vcf.gz.tbi")
+        vcf = temp("results/{ref_name}/vcfs/intervals/filtered_L{l}.vcf.gz"),
+        vcfidx = temp("results/{ref_name}/vcfs/intervals/filtered_L{l}.vcf.gz.tbi")
     conda:
         "../envs/bam2vcf.yml"
     log:
-        "logs/{refGenome}/gatk_filter/{l}.txt"
+        "logs/{ref_name}/gatk_filter/{l}.txt"
     benchmark:
-        "benchmarks/{refGenome}/gatk_filter/{l}.txt"
+        "benchmarks/{ref_name}/gatk_filter/{l}.txt"
     shell:
         "gatk VariantFiltration "
         "-R {input.ref} "
@@ -205,14 +205,14 @@ rule sort_gatherVcfs:
         vcfs = get_interval_vcfs,
         tbis = get_interval_vcfs_idx
     output:
-        vcfFinal = "results/{refGenome}/{prefix}_raw.vcf.gz",
-        vcfFinalidx = "results/{refGenome}/{prefix}_raw.vcf.gz.tbi"
+        vcfFinal = "results/{ref_name}/{prefix}_raw.vcf.gz",
+        vcfFinalidx = "results/{ref_name}/{prefix}_raw.vcf.gz.tbi"
     conda:
         "../envs/bcftools.yml"
     log:
-        "logs/{refGenome}/sort_gather_vcfs/{prefix}_log.txt"
+        "logs/{ref_name}/sort_gather_vcfs/{prefix}_log.txt"
     benchmark:
-        "benchmarks/{refGenome}/sort_gather_vcfs/{prefix}_benchmark.txt"
+        "benchmarks/{ref_name}/sort_gather_vcfs/{prefix}_benchmark.txt"
     resources:
         tmpdir = get_big_temp
     shell:

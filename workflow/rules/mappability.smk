@@ -1,17 +1,17 @@
 rule genmap:
     input:
-        ref = "results/{refGenome}/data/genome/{refGenome}.fna",
+        ref = "results/{ref_name}/data/genome/{ref_name}.fna",
     output:
-        bg = temp("results/{refGenome}/genmap/{refGenome}.genmap.bedgraph"),
-        sorted_bg = "results/{refGenome}/genmap/sorted_mappability.bg"
+        bg = temp("results/{ref_name}/genmap/{ref_name}.genmap.bedgraph"),
+        sorted_bg = "results/{ref_name}/genmap/sorted_mappability.bg"
     params:
-        indir = os.path.join(DEFAULT_STORAGE_PREFIX, "results/{refGenome}/genmap_index"),
-        outdir = os.path.join(DEFAULT_STORAGE_PREFIX, "results/{refGenome}/genmap"),
+        indir = os.path.join(DEFAULT_STORAGE_PREFIX, "results/{ref_name}/genmap_index"),
+        outdir = os.path.join(DEFAULT_STORAGE_PREFIX, "results/{ref_name}/genmap"),
         kmer = config['mappability_k']
     log:
-        "logs/{refGenome}/genmap/log.txt"
+        "logs/{ref_name}/genmap/log.txt"
     benchmark:
-        "benchmarks/{refGenome}/genmap/benchmark.txt"
+        "benchmarks/{ref_name}/genmap/benchmark.txt"
     conda:
         "../envs/mappability.yml"
     shell:
@@ -24,14 +24,14 @@ rule genmap:
 
 rule mappability_bed:
     input:
-        map = "results/{refGenome}/genmap/sorted_mappability.bg"
+        map = "results/{ref_name}/genmap/sorted_mappability.bg"
     output:
-        callable_sites = "results/{refGenome}/callable_sites/{prefix}_callable_sites_map.bed" if config['cov_filter'] else "results/{refGenome}/{prefix}_callable_sites.bed",
-        tmp_map = temp("results/{refGenome}/callable_sites/{prefix}_temp_map.bed")
+        callable_sites = "results/{ref_name}/callable_sites/{prefix}_callable_sites_map.bed" if config['cov_filter'] else "results/{ref_name}/{prefix}_callable_sites.bed",
+        tmp_map = temp("results/{ref_name}/callable_sites/{prefix}_temp_map.bed")
     conda:
         "../envs/mappability.yml"
     benchmark:
-        "benchmarks/{refGenome}/mapbed/{prefix}_benchmark.txt"
+        "benchmarks/{ref_name}/mapbed/{prefix}_benchmark.txt"
     params:
         merge = config['mappability_merge'],
         mappability = config['mappability_min']

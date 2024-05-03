@@ -162,7 +162,7 @@ def main():
     cov_file = basename(snakemake.input["callable_sites"][0])  # noqa: F821
     freq_file = basename(snakemake.input["allele_freq"][0])  # noqa: F821
     depth_file = basename(snakemake.input["depth"][0])  # noqa: F821
-    genome = snakemake.params["refGenome"]  # noqa: F821
+    genome = snakemake.params["ref_name"]  # noqa: F821
     trackhub_file = snakemake.output["trackhub_file"]  # noqa: F821
     html_file = snakemake.output["html"]  # noqa: F821
 

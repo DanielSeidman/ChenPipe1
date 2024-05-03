@@ -1,13 +1,15 @@
+
+
 rule get_fastq_pe:
     output:
-        temp("results/data/fastq/{refGenome}/{sample}/{run}_1.fastq.gz"),
-        temp("results/data/fastq/{refGenome}/{sample}/{run}_2.fastq.gz")
+        temp("results/data/fastq/{ref_name}/{sample}/{run}_1.fastq.gz"),
+        temp("results/data/fastq/{ref_name}/{sample}/{run}_2.fastq.gz")
     params:
-        outdir = os.path.join(DEFAULT_STORAGE_PREFIX, "results/data/fastq/{refGenome}/{sample}/")
+        outdir = os.path.join(DEFAULT_STORAGE_PREFIX, "results/data/fastq/{ref_name}/{sample}/")
     conda:
         "../envs/fastq2bam.yml"
     benchmark:
-        "benchmarks/{refGenome}/getfastq/{sample}_{run}.txt"
+        "benchmarks/{ref_name}/getfastq/{sample}_{run}.txt"
     resources:
         tmpdir = get_big_temp
     shell:
@@ -32,15 +34,15 @@ rule fastp:
     input:
         unpack(get_reads)
     output:
-        r1 = "results/{refGenome}/filtered_fastqs/{sample}/{run}_1.fastq.gz",
-        r2 = "results/{refGenome}/filtered_fastqs/{sample}/{run}_2.fastq.gz",
-        summ = "results/{refGenome}/summary_stats/{sample}/{run}.fastp.out"
+        r1 = "results/{ref_name}/filtered_fastqs/{sample}/{run}_1.fastq.gz",
+        r2 = "results/{ref_name}/filtered_fastqs/{sample}/{run}_2.fastq.gz",
+        summ = "results/{ref_name}/summary_stats/{sample}/{run}.fastp.out"
     conda:
         "../envs/fastq2bam.yml"
     log:
-        "logs/{refGenome}/fastp/{sample}/{run}.txt"
+        "logs/{ref_name}/fastp/{sample}/{run}.txt"
     benchmark:
-        "benchmarks/{refGenome}/fastp/{sample}_{run}.txt"
+        "benchmarks/{ref_name}/fastp/{sample}_{run}.txt"
     params:
         sort_reads = config['sort_reads']
     shell:
@@ -68,3 +70,4 @@ rule fastp:
             &>{log}
         fi
         """
+

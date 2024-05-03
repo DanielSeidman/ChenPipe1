@@ -19,7 +19,7 @@ sort_reads: False
 # Variables you *might* need to change
 ##############################
 
-#refGenome: 
+#ref_name: 
 #refPath:
 
 # Interval approach options, only applicable if intervals is True

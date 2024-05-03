@@ -11,41 +11,41 @@ except ImportError:
 def parse_sample_sheet(config: dict) -> pd.DataFrame:
     samples = pd.read_table(config["samples"], sep=",", dtype=str).replace(' ', '_', regex=True)
     config_genomes = get_config_genomes(config, samples)
-    refGenome = 'refGenome' in samples.columns and samples['refGenome'].notna().any()
+    ref_name = 'ref_name' in samples.columns and samples['ref_name'].notna().any()
     refPath = 'refPath' in samples.columns and samples['refPath'].notna().any()
-    if not any([config_genomes, refGenome, refPath]):
-        raise WorkflowError("No 'refGenome' or 'refPath' found in config or sample sheet.")
+    if not any([config_genomes, ref_name, refPath]):
+        raise WorkflowError("No 'ref_name' or 'refPath' found in config or sample sheet.")
     if config_genomes is not None:
-        config_refGenome, config_refPath = config_genomes
-        samples["refGenome"] = config_refGenome
+        config_ref_name, config_refPath = config_genomes
+        samples["ref_name"] = config_ref_name
         samples["refPath"] = config_refPath
     if 'refPath' in samples.columns and samples['refPath'].notna().any():
         check_ref_paths(samples)
     return samples
 
 def get_config_genomes(config: dict, samples: pd.DataFrame):
-    refGenome = config.get("refGenome", False)
+    ref_name = config.get("ref_name", False)
     refPath = config.get("refPath", False)
 
-    if refGenome and refPath:
-        if 'refGenome' in samples.columns and samples['refGenome'].notna().any():
-            raise WorkflowError("'refGenome' is set in sample sheet AND in config. These are mutually exclusive.")
-        return refGenome, refPath    
-    elif refGenome and not refPath:
-        raise WorkflowError("'refGenome' is set in config, but 'refPath' is not. Both are required to use these settings.")
-    elif refPath and not refGenome:
-        raise WorkflowError("'refPath' is set in config, but 'refGenome' is not. Both are required to use these settings.")
+    if ref_name and refPath:
+        if 'ref_name' in samples.columns and samples['ref_name'].notna().any():
+            raise WorkflowError("'ref_name' is set in sample sheet AND in config. These are mutually exclusive.")
+        return ref_name, refPath    
+    elif ref_name and not refPath:
+        raise WorkflowError("'ref_name' is set in config, but 'refPath' is not. Both are required to use these settings.")
+    elif refPath and not ref_name:
+        raise WorkflowError("'refPath' is set in config, but 'ref_name' is not. Both are required to use these settings.")
     return None
 
 def check_ref_paths(samples: pd.DataFrame) -> None:
     """
-    Checks reference paths to make sure they exist, otherwise we might try to download them based on refGenome.
-    Also make sure only one refPath per refGenome.
+    Checks reference paths to make sure they exist, otherwise we might try to download them based on ref_name.
+    Also make sure only one refPath per ref_name.
     """ 
-    for refname in samples["refGenome"].dropna().tolist():            
-        refs = samples[samples["refGenome"] == refname]["refPath"].dropna().unique().tolist()
+    for refname in samples["ref_name"].dropna().tolist():            
+        refs = samples[samples["ref_name"] == refname]["refPath"].dropna().unique().tolist()
         if len(refs) > 1:
-            raise WorkflowError(f"refGenome '{refname}' has more than one unique 'refPath' specified: {refs}")
+            raise WorkflowError(f"ref_name '{refname}' has more than one unique 'refPath' specified: {refs}")
         for ref in refs:        
             if not Path(ref).exists:
                 raise WorkflowError(f"refPath: '{ref}' was specified in sample sheet, but could not be found.")

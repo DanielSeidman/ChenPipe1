@@ -1,4 +1,4 @@
-BioSample,LibraryName,refGenome,Run,Organism,BioProject,SampleType
+BioSample,LibraryName,ref_name,Run,Organism,BioProject,SampleType
 test1,test1lib,GCF_000146045.2,SRR22893406,yeast,project,exclude
 test2,test2lib,GCF_000146045.2,SRR22893439,yeast,project,exclude
 test3,test3lib,GCF_000146045.2,SRR22893395,yeast,project

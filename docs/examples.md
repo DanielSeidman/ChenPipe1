@@ -61,7 +61,7 @@ bird_10,bird_10_lib,10,/storage/data/bird_10_R1.fq.gz,/storage/data/bird_10_R2.f
 6. **long**: Decimal longitude for the sample, used to generate map in QC module output. 
 
 ```{note}
-If your project has multiple genomes, you can add the refPath and refGenome columns.
+If your project has multiple genomes, you can add the refPath and ref_name columns.
 ```
 
 ## Config file setup
@@ -85,7 +85,7 @@ trackhub_email: "hi@email.com"
 ##############################
 
 # Set reference genome here if you would like to you use the same reference genome for all samples in sample sheet. See docs for more info.
-refGenome: "bird_genome" # Name for reference genome
+ref_name: "bird_genome" # Name for reference genome
 refPath: "/storage/data/bird.fa.gz"
 ```
 

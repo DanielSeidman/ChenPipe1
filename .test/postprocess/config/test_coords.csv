@@ -1,4 +1,4 @@
-BioSample,LibraryName,refGenome,Organism,fq1,fq2,lat,long,Run,BioProject,SampleType
+BioSample,LibraryName,ref_name,Organism,fq1,fq2,lat,long,Run,BioProject,SampleType
 test_A01,test_A01,genome1,test,test_A01_R1.fastq.gz,test_A01_R2.fastq.gz,39.4433764,-122.8245446,test_A01,x
 test_A01,test_A01_S1_L001,genome1,test,test_A01_S1_L001_R1_001.fastq.gz,test_A01_S1_L001_R2_001.fastq.gz,39.4433764,-122.8245446,test_A01_S1_L001,x
 test_B01,test_B01,genome1,test,test_B01_R1.fastq.gz,test_B01_R2.fastq.gz,39.4433764,-122.8245446,test_B01,x
