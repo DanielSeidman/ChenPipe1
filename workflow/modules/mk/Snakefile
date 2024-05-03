@@ -8,43 +8,6 @@ rule all:
     input:
         expand("results/{ref_name}/mk/{prefix}_mk_table.tsv", ref_name=ref_name, prefix=config['final_prefix'])
 
-rule prep_genome:
-    """
-    Gets the needed information (fasta and gff) from NCBI
-    """
-    input: 
-        ref = get_ref,
-        gff = get_gff
-    output:
-        ref = "results/{ref_name}/mk/{ref_name}.fna",
-        gff = "results/{ref_name}/mk/{ref_name}.gff"
-    params:
-        dataset = "results/{ref_name}/mk/{ref_name}_dataset.zip",
-        outdir = "results/{ref_name}/mk/{ref_name}"
-    conda:
-        "envs/ncbi.yml"
-    shell:
-        """
-        set +e
-        #if genome is local, datasets will fail, we will just continue
-        mkdir -p {params.outdir}
-        datasets download genome accession  --exclude-protein --exclude-rna --filename {params.dataset} {wildcards.ref_name} \
-        && 7z x {params.dataset} -aoa -o{params.outdir}
-
-        if [ -z "{input.ref}" ]
-        then
-            cat {params.outdir}/ncbi_dataset/data/{wildcards.ref_name}/*.fna > {output.ref}
-        else
-            cp {input.ref} {output.ref}
-        fi
-
-       if [ -z "{input.gff}" ]
-        then
-            cp {params.outdir}/ncbi_dataset/data/{wildcards.ref_name}/genomic.gff {output.gff}
-        else
-            cp {input.gff} {output.gff}
-        fi
-        """
 
 rule split_samples:
     """
