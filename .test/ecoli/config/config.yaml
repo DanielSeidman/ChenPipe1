@@ -20,7 +20,7 @@ sort_reads: False
 ##############################
 
 #ref_name: 
-#refPath:
+#ref_name:
 
 # Interval approach options, only applicable if intervals is True
 minNmer: 500 # the minimum Nmer used to split up the genome; e.g. a value of 200 means only Nmers 200 or greater are used to define the boundaries of intervals. The minimum is 50.

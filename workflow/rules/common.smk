@@ -92,17 +92,17 @@ def cleanup_curlrc():
 
 def get_ref(wildcards):
     
-    if "refPath" in samples.columns:
+    if "ref_name" in samples.columns:
         _refs = (
-            samples.loc[(samples["ref_name"] == wildcards.ref_name)]["refPath"]
+            samples.loc[(samples["ref_name"] == wildcards.ref_name)]["ref_name"]
             .dropna()
             .unique()
             .tolist()
         )             
         if _refs:
             return _refs
-    # if not user-specified refpath, force MissingInputError in copy_ref with dummyfile, which allows download_ref to run b/c of ruleorder.
-    logger.warning(f"snpArcher: refPath specified in sample sheet header, but no path provided for ref_name '{wildcards.ref_name}'\n" + 
+    # if not user-specified ref_name, force MissingInputError in copy_ref with dummyfile, which allows download_ref to run b/c of ruleorder.
+    logger.warning(f"snpArcher: ref_name specified in sample sheet header, but no path provided for ref_name '{wildcards.ref_name}'\n" + 
                     f"Will try to download '{wildcards.ref_name}' from NCBI. If this is a genome accession, you can ignore this warning.")
     return []
 

@@ -30,11 +30,11 @@ set-threads:
   get_fastq_pe: 1 
   fastp: 1
   # Alignment. Can use more than 1 thread, except merge_bams.
-  bwa_map: 1
-  dedup: 1
+  bwa_map: 31
+  dedup: 31
   merge_bams: 1 # Does NOT use more than 1 thread.
   # GVCF 
-  bam2gvcf: 1 # Should be run with no more than 2 threads.
+  bam2gvcf: 6 # Should be run with no more than 2 threads.
   concat_gvcfs: 1 # Does NOT use more than 1 thread.
   bcftools_norm: 1 # Does NOT use more than 1 thread.
   create_db_mapfile: 1 # Does NOT use more than 1 thread.

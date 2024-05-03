@@ -102,7 +102,7 @@ gsutil cp -r ./data gs://<bucket-name>
 ```
 
 ```{note}
-When using cloud execution, do not include the bucket name in any path fields of the sample sheet, such as fq1, fq2, or refPath
+When using cloud execution, do not include the bucket name in any path fields of the sample sheet, such as fq1, fq2, or ref_name
 ```
 ```{note}
 If you are using data hosted on NCBI, you do not need to upload those data to your bucket, snpArcher will handle this for you. However, you still need to create storage bucket to be used for the workflow.

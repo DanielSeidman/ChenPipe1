@@ -28,7 +28,7 @@ Below are all of the accepted fields for a sample sheet:
 | LibraryName | LibraryID for sample, this can be the same or different than BioSample |
 | Run | The SRR for the sample, if applicable. If not, must be some **unique** value. It is often the lane number if samples are sequenced on multiple lanes. |
 | ref_name | Reference genome accession, if applicable. *See note* |
-| refPath | Path to local reference genome, if applicable. *See note* |
+| ref_name | Path to local reference genome, if applicable. *See note* |
 | BioProject | If applicable. Otherwise any value is acceptable. |
 | fq1 | Optional if no SRR value in Run. Path to read 1 for sample |
 | fq2 | Optional if no SRR value in Run. Path to read 2 for sample |
@@ -37,14 +37,14 @@ Below are all of the accepted fields for a sample sheet:
 | long | Optional. Decimal longitude for sample, required to generate map in QC dashboard. |
 
 ```{note}
-ref_name is always required. refPath specifying the path to a reference fasta file is optional, but when specified, a name for the assembly (in ref_name) must also be included. 
+ref_name is always required. ref_name specifying the path to a reference fasta file is optional, but when specified, a name for the assembly (in ref_name) must also be included. 
 
-If you are using the same reference genome for all samples in your sample sheet, you can omit the ref_name and/or refPath column from the sample sheet and specify these fields in the config file. See [config setup below](#configuring-snparcher) for more details.
+If you are using the same reference genome for all samples in your sample sheet, you can omit the ref_name and/or ref_name column from the sample sheet and specify these fields in the config file. See [config setup below](#configuring-snparcher) for more details.
 ```
 
 It is important to note that samples are proccessed together based on their `ref_name` metadata, so **all BioSamples that share a reference genome will ultimately end up in the same final vcf file.** If you are mapping multiple populations / species to a single reference genome, and want separate VCF files for each population / species, you will need to split your final vcf after the pipeline completes, or run multiple indpendent sample sheets in different results directories. 
 
-If your reads (and, optionally, your local reference genome) are stored in somewhere seperate of the workflow (e.g.: a scratch disk) then you can specify the path to your reads using the `fq1` and `fq2` fields, and the location of your reference genome fasta in the `refPath` field. 
+If your reads (and, optionally, your local reference genome) are stored in somewhere seperate of the workflow (e.g.: a scratch disk) then you can specify the path to your reads using the `fq1` and `fq2` fields, and the location of your reference genome fasta in the `ref_name` field. 
 
 ### Using data from NCBI SRA
 If you'd like to reanalyze an existing NCBI SRA BioProject, please follow these instructions to quickly create a sample sheet.
@@ -112,7 +112,7 @@ The following options in `config/config.yaml` must be set before running snpArch
 | `generate_trackhub` | Generate population genomics stats trackhub | `bool`| `True` | `True` |
 | `trackhub_email` | Trackhubs require an email address | `str` | `True` if `generate_trackhub==True` | `None` |
 | `ref_name` | Reference genome name or accession | `str` | `True` if not provided in sample sheet |  `None` |
-| `refPath` | Path to reference genome if not using NCBI genome accession | `str` | `False` | `None` |
+| `ref_name` | Path to reference genome if not using NCBI genome accession | `str` | `False` | `None` |
 | `mark_duplicates` | Mark optical duplicates before variant calling. | `str` | `True` | `True` |
 | `sort_reads` | Sort reads by read name before running adapter trimming. | `str` | `True` | `False` |
 
