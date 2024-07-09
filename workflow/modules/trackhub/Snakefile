@@ -27,7 +27,7 @@ rule write_hub_files:
         trackhub_file = "results/{ref_name}/trackhub/hub.txt",
         html = "results/{ref_name}/trackhub/index.html"
     params:
-        refGenome = config['ref_name'],
+        ref_name = config['ref_name'],
         file_types = FILE_TYPES,
         windows = WINDOWS,
         email = config["trackhub_email"]

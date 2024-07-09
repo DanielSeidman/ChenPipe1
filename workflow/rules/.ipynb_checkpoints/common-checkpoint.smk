@@ -27,7 +27,7 @@ def get_output():
     #for ref in genomes:
     out.extend(expand("results/{ref_name}/gvcfs/{sample}.g.vcf.gz", ref_name=ref, sample=sample_names))
     #out.extend(expand("results/{ref_name}/summary_stats/{prefix}_bam_sumstats.txt", prefix=config['final_prefix']))
-    #out.extend(expand("results/{ref_name}/{prefix}_callable_sites.bed", refGenome=ref, prefix=config['final_prefix']))#Do not want this in current version for anything
+    #out.extend(expand("results/{ref_name}/{prefix}_callable_sites.bed", ref_name=ref, prefix=config['final_prefix']))#Do not want this in current version for anything
 
     #out.append(rules.qc_all.input)
     #if "SampleType" in samples.columns:

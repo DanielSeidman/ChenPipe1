@@ -9,7 +9,7 @@ rule bam2gvcf:
         bai = "results/{ref_name}/bams/{sample}_final.bam.bai",
         l = "results/{ref_name}/intervals/gvcf_intervals/{l}-scattered.interval_list",
         ref= "config/{ref_name}.fasta",
-        indexes=expand("config/{ref_name}.fasta.{ext}",ext=["sa", "pac", "bwt", "ann", "amb", "fai"]),
+        indexes=expand("config/{{ref_name}}.fasta.{ext}",ext=["sa", "pac", "bwt", "ann", "amb", "fai"], ref_name=config['ref_name']),
         dictf="config/{ref_name}.dict",
     output:
         gvcf = "results/{ref_name}/interval_gvcfs/{sample}/{l}.raw.g.vcf.gz",

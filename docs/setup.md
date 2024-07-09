@@ -27,7 +27,7 @@ Below are all of the accepted fields for a sample sheet:
 | BioSample | The name of the sample. This will be the sample name in the final VCF |
 | LibraryName | LibraryID for sample, this can be the same or different than BioSample |
 | Run | The SRR for the sample, if applicable. If not, must be some **unique** value. It is often the lane number if samples are sequenced on multiple lanes. |
-| refGenome | Reference genome accession, if applicable. *See note* |
+| ref_name | Reference genome accession, if applicable. *See note* |
 | refPath | Path to local reference genome, if applicable. *See note* |
 | BioProject | If applicable. Otherwise any value is acceptable. |
 | fq1 | Optional if no SRR value in Run. Path to read 1 for sample |
@@ -35,10 +35,10 @@ Below are all of the accepted fields for a sample sheet:
 | SampleType | Optional. Triggers postproccesing module. Accepted values are 'include' or 'exclude' |
 
 ```{note}
-refGenome is always required. refPath specifying the path to a reference fasta file is optional, but when specified, a name for the assembly (in refGenome) must also be included. 
+ref_name is always required. refPath specifying the path to a reference fasta file is optional, but when specified, a name for the assembly (in ref_name) must also be included. 
 ```
 
-It is important to note that samples are proccessed together based on their `refGenome` metadata, so **all BioSamples that share a reference genome will ultimately end up in the same final vcf file.** If you are mapping multiple populations / species to a single reference genome, and want separate VCF files for each population / species, you will need to split your final vcf after the pipeline completes, or run multiiple indpendent sample sheets in different results directories. 
+It is important to note that samples are proccessed together based on their `ref_name` metadata, so **all BioSamples that share a reference genome will ultimately end up in the same final vcf file.** If you are mapping multiple populations / species to a single reference genome, and want separate VCF files for each population / species, you will need to split your final vcf after the pipeline completes, or run multiiple indpendent sample sheets in different results directories. 
 
 If your reads (and, optionally, your local reference genome) are stored in somewhere seperate of the workflow (e.g.: a scratch disk) then you can specify the path to your reads using the `fq1` and `fq2` fields, and the location of your reference genome fasta (*note: must be uncompressed*) in the `refPath` field. 
 
@@ -51,7 +51,7 @@ If you'd like to reanalyze an existing NCBI SRA BioProject, please follow these 
 4. On the Run Selector page, you can select/deselect samples you'd like to include/exclude in your sample sheet by using the checkboxes.
 5. Once you are done selecting samples, click the `Metadata` button in the `Download` column in the table near the middle of the page.
 6. This will download a a comma separated file called `SraRunTable.txt`.
-7. Open the file in the editor of your choice, and add a column named `refGenome`. In this column, enter the reference genome accession you want to use for every row in the sheet.
+7. Open the file in the editor of your choice, and add a column named `ref_name`. In this column, enter the reference genome accession you want to use for every row in the sheet.
 8. Save the sample sheet, it is now ready to use.
 
 ### Using local data

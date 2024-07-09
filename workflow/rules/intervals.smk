@@ -38,7 +38,7 @@ checkpoint create_db_intervals:
         ref = "config/{ref_name}.fasta",
         fai = "config/{ref_name}.fasta.fai",
         dictf = "config/{ref_name}.dict",
-        intervals = "results/intervals/master_interval_list.list"
+        intervals = "results/{ref_name}/intervals/master_interval_list.list"
     output:
         fof = "results/{ref_name}/intervals/db_intervals/intervals.txt",
         out_dir = directory("results/{ref_name}/intervals/db_intervals"),
