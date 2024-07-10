@@ -60,7 +60,7 @@ if ADVANCED_ARGUMENT_CONVERSION:
 #7) Format pattern in snakemake style
 sbatch_options = slurm_utils.format_values(sbatch_options, job_properties)
 
-dseidmanDebugCassette(sbatch_options)
+#dseidmanDebugCassette(sbatch_options)
 
 #print("7",sbatch_options)
 # ensure sbatch output dirs exist
