@@ -394,4 +394,3 @@ def printBamSumStats(
                     "\t",
                     med_abs_insert_std[samp],
                     file=f,)
-
