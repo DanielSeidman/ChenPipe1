@@ -22,7 +22,7 @@ def get_output():
     if config["final_prefix"] == "":
         raise(WorkflowError("'final_prefix' is not set in config."))
     out = []
-    sample_names = samples['BioSample'].uniqvue().tolist()
+    sample_names = samples['BioSample'].unique().tolist()
     #out.extend(expand("results/{ref_name}/gvcfs/{sample}.g.vcf.gz", ref_name=ref, sample=sample_names))
     out.extend(expand("results/{ref_name}/{prefix}_raw.vcf.gz",ref_name=ref, prefix=config["final_prefix"]))
     #out.extend(expand("results/{ref_name}/summary_stats/{prefix}_bam_sumstats.txt", ref_name=ref, prefix=config['final_prefix']))
