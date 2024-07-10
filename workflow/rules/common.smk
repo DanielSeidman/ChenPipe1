@@ -23,7 +23,6 @@ def get_output():
         raise(WorkflowError("'final_prefix' is not set in config."))
     out = []
     sample_names = samples['BioSample'].unique().tolist()
-
     #out.extend(expand("results/{ref_name}/gvcfs/{sample}.g.vcf.gz", ref_name=ref, sample=sample_names))
     out.extend(expand("results/{ref_name}/{prefix}_raw.vcf.gz",ref_name=ref, prefix=config["final_prefix"])))
     out.extend(expand("results/{ref_name}/summary_stats/{prefix}_bam_sumstats.txt", ref_name=ref, prefix=config['final_prefix']))
@@ -250,7 +249,6 @@ def collectFastpOutput(fastpFiles):
 
     FractionReadsPassFilter = defaultdict(float)
     NumReadsPassFilter = defaultdict(int)
-
     for fn in fastpFiles:
         sample = os.path.basename(fn)
         sample = sample.replace("_fastp.out", "")
@@ -259,17 +257,13 @@ def collectFastpOutput(fastpFiles):
         f = open(fn, "r")
         for line in f:
             if "before filtering" in line:
-
                 line = next(f)
                 line = line.split()
                 unfiltered += int(line[2])
-
             if "Filtering result" in line:
-
                 line = next(f)
                 line = line.split()
                 pass_filter += int(line[3])
-
         f.close()
         FractionReadsPassFilter[sample] = float(pass_filter / unfiltered)
         NumReadsPassFilter[sample] = pass_filter
@@ -289,7 +283,6 @@ def collectAlnSumMets(alnSumMetsFiles):
             num_mapped = int(lines[6].split()[0])
             percent_mapped = lines[7].split()[0].strip("%")
             percent_proper_paired = lines[14].split()[0].strip("%")
-
             percent_dups = num_dups / total_aligns if total_aligns != 0 else 0
             aln_metrics[sample]["Total alignments"] = total_aligns
             aln_metrics[sample]["Percent Mapped"] = percent_mapped
@@ -300,10 +293,8 @@ def collectAlnSumMets(alnSumMetsFiles):
 
 
 def collectCoverageMetrics(coverageFiles):
-
     SeqDepths = defaultdict(float)
     CoveredBases = defaultdict(float)
-
     for fn in coverageFiles:
         # these files contain coverage data by scaffold; take weighted average
         sample = os.path.basename(fn)
@@ -331,7 +322,6 @@ def collectCoverageMetrics(coverageFiles):
 def collect_inserts(files):
     med_inserts = defaultdict(float)
     med_insert_std = defaultdict(float)
-
     for file in files:
         sample = os.path.basename(file)
         sample = sample.replace("_insert_metrics.txt", "")
@@ -344,7 +334,6 @@ def collect_inserts(files):
                         med_insert_std[sample] = line[1]
                     except IndexError:
                         continue
-
     return med_inserts, med_insert_std
 
 
