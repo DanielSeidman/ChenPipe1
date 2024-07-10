@@ -25,7 +25,7 @@ RESOURCE_MAPPING = {
 }
 
 def dseidmanDebugCassette(printMessage):
-    with open('/scratch/nchen11_lab/dseidmanProcesses/mutationsProject', 'ab') as f:
+    with open('/scratch/nchen11_lab/dseidmanProcesses/mutationsProject/debugOut.txt', 'ab') as f:
         f.write(printMessage)
 
 
