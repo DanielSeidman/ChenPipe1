@@ -343,8 +343,7 @@ def printBamSumStats(
     NumReadsPassFilter,
     out_file,
     med_insert_sizes=None,
-    med_abs_insert_std=None,
-):
+    med_abs_insert_std=None,):
 
     samples = depths.keys()
     if med_insert_sizes is None:
