@@ -8,6 +8,10 @@ from snakemake.utils import read_job_properties
 
 import slurm_utils
 
+
+
+
+
 # cookiecutter arguments
 SBATCH_DEFAULTS = """ """
 CLUSTER_CONFIG = "./cluster_config.yml"
@@ -19,6 +23,11 @@ RESOURCE_MAPPING = {
     #"mem-per-cpu": ("mem-per-cpu", "mem_per_cpu", "mem_per_thread"),
     "nodes": ("nodes", "nnodes")
 }
+
+def dseidmanDebugCassette(printMessage):
+    with open('/scratch/nchen11_lab/dseidmanProcesses/mutationsProject', 'ab') as f:
+        f.write(printMessage)
+
 
 # parse job
 jobscript = slurm_utils.parse_jobscript()
@@ -56,7 +65,4 @@ dseidmanDebugCassette(sbatch_options)
 #print("7",sbatch_options)
 # ensure sbatch output dirs exist
 for o in ("output", "error"):
-    slurm_utils.ensure_dirs_exist(sbatch_options[o]) if o in sbatch_options else None
-
-# submit job and echo id back to Snakemake (must be the only stdout)
-print(slurm_utils.submit_job(jobscript, **sbatch_options))
+    slurm_utils.ensure_dirs_exist(sbatch_options[o])
