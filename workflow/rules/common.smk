@@ -351,8 +351,7 @@ def printBamSumStats(
         with open(out_file, "w") as f:
             print(
                 "Sample\tTotal_Reads\tPercent_mapped\tNum_duplicates\tPercent_properly_paired\tFraction_reads_pass_filter\tNumReadsPassingFilters",
-                file=f,
-            )
+                file=f,)
             for samp in samples:
                 print(
                     samp,
