@@ -173,8 +173,7 @@ def get_input_sumstats(wildcards):
             "qc_files": qd,
             "mq_files": mq,
             "gc_files": gc,
-            "gc_summary": gc_summary
-        }
+            "gc_summary": gc_summary}
         return out
     else:
         out = {
