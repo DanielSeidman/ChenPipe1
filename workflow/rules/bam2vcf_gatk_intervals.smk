@@ -24,7 +24,6 @@ rule bam2gvcf:
     benchmark:
         "benchmarks/{ref_name}/gatk_hc/{sample}_{l}.txt"
     params:
-
         minPrun = config['minP'],
         minDang = config['minD'],
         ploidy = config['ploidy'],

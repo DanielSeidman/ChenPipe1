@@ -4,4 +4,4 @@ __default__:
     nodes: 1
     output: "logs/slurm/slurm-%j.out"
     ntasks-per-node: 2
-
+    nodelist: bhd0137
