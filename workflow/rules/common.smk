@@ -54,7 +54,7 @@ def get_interval_gvcfs(wc):
         lines = [l.strip() for l in f.readlines()]
     list_files = [os.path.basename(x) for x in lines]
     list_numbers = [f.replace("-scattered.interval_list", "") for f in list_files]
-    gvcfs = expand("results/{ref_name}/interval_gvcfs/{{sample}}/{l}.raw.g.vcf.gz", ref_name=ref l=list_numbers)
+    gvcfs = expand("results/{ref_name}/interval_gvcfs/{{sample}}/{l}.raw.g.vcf.gz", ref_name=ref, l=list_numbers)
     
     return gvcfs
 
