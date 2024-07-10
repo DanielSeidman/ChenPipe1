@@ -179,8 +179,7 @@ def get_input_sumstats(wildcards):
         out = {
             "alnSumMetsFiles": aln,
             "fastpFiles": fastp,
-            "coverageFiles": cov,
-        }
+            "coverageFiles": cov,}
         return out
 
 def get_input_for_mapfile(wildcards):
