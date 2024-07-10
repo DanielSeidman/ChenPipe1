@@ -10,6 +10,11 @@ from snakemake.io import Wildcards
 from snakemake.utils import SequenceFormatter, AlwaysQuotedFormatter, QuotedFormatter
 from snakemake.exceptions import WorkflowError
 
+
+def dseidmanDebugCassette(printMessage):
+    with open('/scratch/nchen11_lab/dseidmanProcesses/mutationsProject','ab') as f:
+        f.write(printMessage)
+
 def parse_jobscript():
     """Minimal CLI to require/only accept single positional argument."""
     p = argparse.ArgumentParser(description="SLURM snakemake submit script")
@@ -127,7 +132,7 @@ def submit_job(jobscript, **sbatch_options):
     optsbatch_options = [f"--{k}={v}" for k, v in sbatch_options.items()]
     try:
         res = subprocess.check_output(["sbatch"] + optsbatch_options + [jobscript])
-        #print("res: ", res)  ##Debugging
+        dseidmanDebugCassette(["sbatch"] + optsbatch_options + [jobscript])
     except subprocess.CalledProcessError as e:
         raise e
     # Get jobid
