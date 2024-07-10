@@ -37,10 +37,10 @@ sbatch_options.update(cluster_config["__default__"])
 sbatch_options.update(
     slurm_utils.convert_job_properties(job_properties, RESOURCE_MAPPING)
 )
-print("3",sbatch_options)
+#print("3",sbatch_options)
 # 4) cluster_config for particular rule
 sbatch_options.update(cluster_config.get(job_properties.get("rule"), {}))
-print("4",sbatch_options)
+#print("4",sbatch_options)
 # 5) cluster_config options
 sbatch_options.update(job_properties.get("cluster", {}))
 #print("5",sbatch_options)
@@ -50,6 +50,9 @@ if ADVANCED_ARGUMENT_CONVERSION:
 #print("6",sbatch_options)
 #7) Format pattern in snakemake style
 sbatch_options = slurm_utils.format_values(sbatch_options, job_properties)
+
+dseidmanDebugCassette(sbatch_options)
+
 #print("7",sbatch_options)
 # ensure sbatch output dirs exist
 for o in ("output", "error"):
