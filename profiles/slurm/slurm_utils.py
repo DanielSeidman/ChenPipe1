@@ -11,9 +11,7 @@ from snakemake.utils import SequenceFormatter, AlwaysQuotedFormatter, QuotedForm
 from snakemake.exceptions import WorkflowError
 
 
-def dseidmanDebugCassette(printMessage):
-    with open('/scratch/nchen11_lab/dseidmanProcesses/mutationsProject','ab') as f:
-        f.write(str(printMessage))
+
 
 def parse_jobscript():
     """Minimal CLI to require/only accept single positional argument."""
