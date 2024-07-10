@@ -24,7 +24,7 @@ def get_output():
     out = []
     sample_names = samples['BioSample'].unique().tolist()
     #out.extend(expand("results/{ref_name}/gvcfs/{sample}.g.vcf.gz", ref_name=ref, sample=sample_names))
-    out.extend(expand("results/{ref_name}/{prefix}_raw.vcf.gz",ref_name=ref, prefix=config["final_prefix"])))
+    out.extend(expand("results/{ref_name}/{prefix}_raw.vcf.gz",ref_name=ref, prefix=config["final_prefix"]))
     out.extend(expand("results/{ref_name}/summary_stats/{prefix}_bam_sumstats.txt", ref_name=ref, prefix=config['final_prefix']))
     out.extend(expand("results/{ref_name}/{prefix}_callable_sites.bed", ref_name=ref, prefix=config['final_prefix']))#Do not want this in current version for anything
 
