@@ -66,7 +66,7 @@ rule create_db_mapfile:
     TODO
     """
     input:
-        get_input_for_mapfile
+        unpack(get_input_for_mapfile)
     output:
         db_mapfile = "results/{ref_name}/genomics_db_import/DB_mapfile.txt"
     run:
