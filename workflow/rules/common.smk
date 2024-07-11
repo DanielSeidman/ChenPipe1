@@ -84,8 +84,8 @@ def get_interval_vcfs_idx(wc):
     
 def get_gvcfs_db(wc):
     _samples = samples['BioSample'].unique().tolist()
-    gvcfs = expand("results/{ref_name}/gvcfs/{sample}.g.vcf.gz", sample=_samples)
-    tbis = expand("results/{ref_name}/gvcfs/{sample}.g.vcf.gz.tbi", sample=_samples)
+    gvcfs = expand("results/{ref_name}/gvcfs/{sample}.g.vcf.gz", sample=_samples, ref_name=ref)
+    tbis = expand("results/{ref_name}/gvcfs/{sample}.g.vcf.gz.tbi", sample=_samples, ref_name=ref)
     return {"gvcfs": gvcfs, "tbis": tbis}
 
 def dedup_input(wc):
