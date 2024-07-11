@@ -8,10 +8,6 @@ from snakemake.utils import read_job_properties
 
 import slurm_utils
 
-
-
-
-
 # cookiecutter arguments
 SBATCH_DEFAULTS = """ """
 CLUSTER_CONFIG = "./cluster_config.yml"
@@ -23,11 +19,6 @@ RESOURCE_MAPPING = {
     #"mem-per-cpu": ("mem-per-cpu", "mem_per_cpu", "mem_per_thread"),
     "nodes": ("nodes", "nnodes")
 }
-
-#def dseidmanDebugCassette(printMessage):
-#    with open('/scratch/nchen11_lab/dseidmanProcesses/mutationsProject/debugOut.txt', 'a') as f:
-#        f.write(str(printMessage))
-
 
 # parse job
 jobscript = slurm_utils.parse_jobscript()
@@ -46,10 +37,10 @@ sbatch_options.update(cluster_config["__default__"])
 sbatch_options.update(
     slurm_utils.convert_job_properties(job_properties, RESOURCE_MAPPING)
 )
-#print("3",sbatch_options)
+print("3",sbatch_options)
 # 4) cluster_config for particular rule
 sbatch_options.update(cluster_config.get(job_properties.get("rule"), {}))
-#print("4",sbatch_options)
+print("4",sbatch_options)
 # 5) cluster_config options
 sbatch_options.update(job_properties.get("cluster", {}))
 #print("5",sbatch_options)
@@ -59,10 +50,10 @@ if ADVANCED_ARGUMENT_CONVERSION:
 #print("6",sbatch_options)
 #7) Format pattern in snakemake style
 sbatch_options = slurm_utils.format_values(sbatch_options, job_properties)
-
-#dseidmanDebugCassette(sbatch_options)
-
 #print("7",sbatch_options)
 # ensure sbatch output dirs exist
 for o in ("output", "error"):
-    slurm_utils.ensure_dirs_exist(sbatch_options[o])
+    slurm_utils.ensure_dirs_exist(sbatch_options[o]) if o in sbatch_options else None
+
+# submit job and echo id back to Snakemake (must be the only stdout)
+print(slurm_utils.submit_job(jobscript, **sbatch_options))
