@@ -184,18 +184,18 @@ def get_input_sumstats(wildcards):
 
 def get_input_for_mapfile(wildcards):
     sample_names = samples['BioSample'].unique().tolist()
-    return expand("results/gvcfs/{sample}.g.vcf.gz", sample=sample_names)
+    return expand("results/{ref_name}/gvcfs/{sample}.g.vcf.gz", sample=sample_names, ref_name=ref)
 
 def get_input_for_coverage(wildcards):
     # Gets the correct sample given the organism and reference genome for the bedgraph merge step
     _samples = samples['BioSample'].unique().tolist()
-    d4files = expand("results/callable_sites/{sample}.per-base.d4", sample=_samples)
+    d4files = expand("results/{ref_name}/callable_sites/{sample}.per-base.d4", sample=_samples, ref_name=ref)
     return {'d4files': d4files}
 
 def get_input_covstats(wildcards):
     # Gets the correct sample given the organism and reference genome for the bedgraph merge step
     _samples = samples['BioSample'].unique().tolist()
-    covstats = expand("results/callable_sites/{sample}.mosdepth.summary.txt", sample=_samples)
+    covstats = expand("results/{ref_name}/callable_sites/{sample}.mosdepth.summary.txt", sample=_samples,ref_name=ref)
     return {'covStatFiles': covstats}
 
 def get_bedgraphs(wildcards):
