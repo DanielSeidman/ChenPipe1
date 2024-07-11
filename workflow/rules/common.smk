@@ -74,7 +74,7 @@ def get_interval_vcfs(wc):
     list_files = [os.path.basename(x) for x in lines]
     
     list_numbers = [f.replace("-scattered.interval_list", "") for f in list_files]
-    vcfs = expand("results/{ref_name}/vcfs/intervals/filtered_L{l}.vcf.gz", l=list_numbers)
+    vcfs = expand("results/{ref_name}/vcfs/intervals/filtered_L{l}.vcf.gz", l=list_numbers, ref_name=ref)
     
     return vcfs
 
