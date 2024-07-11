@@ -15,7 +15,7 @@ rule index_reference:
         "benchmarks/{ref_name}/index_ref/benchmark.txt"
     shell:
         """
-        bwa index {input.ref} 2> {log}
+        bwa index {input.ref} > {log} 2>&1
         samtools faidx {input.ref} --output {output.fai} >> {log}
         samtools dict {input.ref} -o {output.dictf} >> {log} 2>&1
         """
