@@ -24,9 +24,9 @@ RESOURCE_MAPPING = {
     "nodes": ("nodes", "nnodes")
 }
 
-def dseidmanDebugCassette(printMessage):
-    with open('/scratch/nchen11_lab/dseidmanProcesses/mutationsProject/debugOut.txt', 'a') as f:
-        f.write(str(printMessage))
+#def dseidmanDebugCassette(printMessage):
+#    with open('/scratch/nchen11_lab/dseidmanProcesses/mutationsProject/debugOut.txt', 'a') as f:
+#        f.write(str(printMessage))
 
 
 # parse job
