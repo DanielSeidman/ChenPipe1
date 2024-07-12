@@ -104,7 +104,7 @@ bam2gvcf:
   threads: 3
 # gatk GenomicsDBImport
 gvcf2DB:
-  tgreads: 8
+  threads: 8
 # gatk GenotypeGVCFs
 DB2vcf:
   threads: 8
