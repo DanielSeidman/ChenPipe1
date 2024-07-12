@@ -18,7 +18,7 @@ rule bam2gvcf:
         #!The -Xmx value the tool is run with should be less than the total amount of physical memory available by at least a few GB
         # subtract that memory here
         mem_mb = lambda wildcards, attempt: attempt * resources['bam2gvcf']['threads'] * 4000,   # this is the overall memory requested
-        reduced = lambda wildcards, attempt: attempt * (() - 3000)  # this is the maximum amount given to java
+        reduced = lambda wildcards, attempt: (attempt * resources['bam2gvcf']['threads'] * 4000 * 0.80)  # this is the maximum amount given to java
     log:
         "logs/{ref_name}/gatk_hc/{sample}/{l}.txt"
     benchmark:
